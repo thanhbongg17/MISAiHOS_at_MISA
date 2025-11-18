@@ -6,16 +6,106 @@ import '../../data/models/home/home.model.dart';
 import '../../data/models/user/user.model.dart';
 
 
-class HomePage extends StatelessWidget {
-  const HomePage({super.key});
+class MainFeedContent extends StatelessWidget {
+  const MainFeedContent({super.key});
 
   @override
   Widget build(BuildContext context) {
     // Khởi tạo Controller và đưa vào bộ nhớ
     final HomeController controller = Get.put(HomeController());
 
+    return Scaffold(
+
+      body: Obx(
+            () {
+          return controller.pages[controller.currentPage.value];
+        },
+      ),
+
+      // Bottom Navigation Bar
+      bottomNavigationBar: _buildBottomNavBar(controller),
+    );
+  }
+  Widget _buildBottomNavBar(HomeController controller) {
+    return Container(
+      decoration: const BoxDecoration(
+        border: Border(top: BorderSide(color: Colors.grey, width: 0.5)),
+      ),
+      // 🌟 BỌC BẰNG Obx ĐỂ THEO DÕI TRẠNG THÁI currentIndex
+      child: Obx(
+            () => BottomNavigationBar(
+          type: BottomNavigationBarType.fixed,
+          selectedItemColor: Colors.teal, // Màu theo ảnh
+          unselectedItemColor: Colors.grey,
+          showUnselectedLabels: true,
+          backgroundColor: Colors.white,
+
+          // 🌟 LẤY GIÁ TRỊ INDEX HIỆN TẠI TỪ CONTROLLER
+          currentIndex: controller.currentPage.value,
+
+          // 🌟 THÊM SỰ KIỆN TAP ĐỂ THAY ĐỔI TRANG
+          onTap: controller.changePage,
+
+          items: [
+            _navBarItem(Icons.home, 'Bảng tin'),
+            _navBarItem(Icons.group, 'Danh bạ'),
+            _navBarItem(Icons.bar_chart, 'Báo cáo'),
+
+            // Icon Chat với Badge (Sử dụng Obx)
+            BottomNavigationBarItem(
+              icon: Obx(() => Stack(
+                children: [
+                  const Icon(Icons.chat_bubble_outline),
+                  if (controller.notificationCount.value > 0)
+                    Positioned(
+                      right: 0,
+                      top: 0,
+                      child: Container(
+                        padding: const EdgeInsets.all(2),
+                        decoration: BoxDecoration(
+                          color: Colors.red,
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        constraints: const BoxConstraints(
+                          minWidth: 10,
+                          minHeight: 10,
+                        ),
+                      ),
+                    ),
+                ],
+              )),
+              label: 'Chat',
+            ),
+            _navBarItem(Icons.more_horiz, 'Thêm'),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // Widget phụ cho BottomNavigationBar
+  BottomNavigationBarItem _navBarItem(IconData icon, String label) {
+    return BottomNavigationBarItem(
+      icon: Icon(icon),
+      label: label,
+    );
+  }
+
+}
+//HomePage
+//MainFeedContent
+class HomePage extends StatelessWidget {
+  const HomePage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    // Khởi tạo Controller và đưa vào bộ nhớ
+    //final HomeController controller = Get.put(HomeController());
+    final HomeController controller = Get.find<HomeController>();
+
 
     return Scaffold(
+
       body: SafeArea(
         child: Column(
           children: [
@@ -54,13 +144,14 @@ class HomePage extends StatelessWidget {
                     return _buildFeedPost(controller, post, index);
                   },
                 );
+
               }),
             ),
           ],
         ),
       ),
       // --- Phần 6: Bottom Navigation Bar ---
-      bottomNavigationBar: _buildBottomNavBar(controller),
+      //bottomNavigationBar: _buildBottomNavBar(controller),
     );
   }
 
@@ -544,59 +635,5 @@ class HomePage extends StatelessWidget {
     );
   }
 
-  Widget _buildBottomNavBar(HomeController controller) {
-    // Sử dụng GetX để hiển thị badge (chấm đỏ) ở icon Chat
-    return Container(
-      decoration: const BoxDecoration(
-        border: Border(top: BorderSide(color: Colors.grey, width: 0.5)),
-      ),
-      child: BottomNavigationBar(
-        type: BottomNavigationBarType.fixed,
-        selectedItemColor: Colors.teal, // Màu theo ảnh
-        unselectedItemColor: Colors.grey,
-        showUnselectedLabels: true,
-        backgroundColor: Colors.white,
-        currentIndex: 0,
-        items: [
-          _navBarItem(Icons.home, 'Bảng tin'),
-          _navBarItem(Icons.group, 'Danh bạ'),
-          _navBarItem(Icons.bar_chart, 'Báo cáo'),
-          // Icon Chat với Badge (Sử dụng Obx)
-          BottomNavigationBarItem(
-            icon: Obx(() => Stack(
-              children: [
-                const Icon(Icons.chat_bubble_outline),
-                if (controller.notificationCount.value > 0)
-                  Positioned(
-                    right: 0,
-                    top: 0,
-                    child: Container(
-                      padding: const EdgeInsets.all(2),
-                      decoration: BoxDecoration(
-                        color: Colors.red,
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      constraints: const BoxConstraints(
-                        minWidth: 10,
-                        minHeight: 10,
-                      ),
-                    ),
-                  ),
-              ],
-            )),
-            label: 'Chat',
-          ),
-          _navBarItem(Icons.more_horiz, 'Thêm'),
-        ],
-      ),
-    );
-  }
 
-  // Widget phụ cho BottomNavigationBar
-  BottomNavigationBarItem _navBarItem(IconData icon, String label) {
-    return BottomNavigationBarItem(
-      icon: Icon(icon),
-      label: label,
-    );
-  }
 }

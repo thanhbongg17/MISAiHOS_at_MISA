@@ -13,6 +13,20 @@ class HomeController extends GetxController {
   // --- Các biến trạng thái đơn giản ---
   var notificationCount = 1.obs;
   var currentPage = 0.obs; // Thêm biến theo dõi trang hiện tại
+  final List<Widget> pages = [
+    // Giả định trang chính hiện tại là HomePage (nếu bạn dùng nó làm Container)
+    const MainFeedContent(), // 0. Bảng tin (Nội dung chính của HomePage)
+    const ContactsPage(),    // 1. Danh bạ (Cần tạo file này)
+    const ReportPage(),      // 2. Báo cáo (Cần tạo file này)
+    const ChatPage(),        // 3. Chat (Cần tạo file này)
+    const MorePage(),        // 4. Thêm (Cần tạo file này)
+  ];
+
+  // Hàm được gọi khi người dùng nhấn vào một tab
+  void changePage(int index) {
+    currentPage.value = index;
+    // Get.toNamed('/routeName'); // Nếu bạn dùng named routes
+  }
   @override
   void onInit() {
     super.onInit();
@@ -151,4 +165,32 @@ class HomeController extends GetxController {
 
     feedPosts[index] = newPost;
   }
+}
+// điều hướng trang
+// Giả lập các trang đích (Bạn cần tạo các file/class này)
+//====1
+class MainFeedContent extends StatelessWidget {
+  const MainFeedContent({super.key});
+  // Đặt nội dung Bảng tin chính ở đây
+  @override Widget build(BuildContext context) => const Text("Nội dung Bảng tin");
+}
+//====2
+class ContactsPage extends StatelessWidget {
+  const ContactsPage({super.key});
+  @override Widget build(BuildContext context) => const Center(child: Text("Trang Danh bạ"));
+}
+//====3
+class ReportPage extends StatelessWidget {
+  const ReportPage({super.key});
+  @override Widget build(BuildContext context) => const Center(child: Text("Trang Báo cáo"));
+}
+//====4
+class ChatPage extends StatelessWidget {
+  const ChatPage({super.key});
+  @override Widget build(BuildContext context) => const Center(child: Text("Trang Chat"));
+}
+//====5
+class MorePage extends StatelessWidget {
+  const MorePage({super.key});
+  @override Widget build(BuildContext context) => const Center(child: Text("Trang Thêm"));
 }
