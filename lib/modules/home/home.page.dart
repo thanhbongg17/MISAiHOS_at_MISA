@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../auth/controller/login.controller.dart';
 import '../auth/controller/home.controller.dart';
-import '../../data/models/home/home.model.dart'; // Đảm bảo đường dẫn này đúng
+import '../../data/models/home/home.model.dart';
+import '../../data/models/user/user.model.dart';
 
 
 class HomePage extends StatelessWidget {
@@ -12,6 +13,7 @@ class HomePage extends StatelessWidget {
   Widget build(BuildContext context) {
     // Khởi tạo Controller và đưa vào bộ nhớ
     final HomeController controller = Get.put(HomeController());
+
 
     return Scaffold(
       body: SafeArea(
@@ -27,7 +29,7 @@ class HomePage extends StatelessWidget {
             _buildUserList(controller),
 
             // --- Phần 4: Banner Gửi lời chúc (Static) ---
-            _buildBirthdayBanner(),
+            _buildBirthdayBanner(controller),
 
             // --- Divider (Tách biệt banner và feed) ---
             const Divider(height: 1, color: Colors.grey),
@@ -412,72 +414,123 @@ class HomePage extends StatelessWidget {
     );
   }
 
-  Widget _buildBirthdayBanner() {
-    return Container(
-      height: 160,
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        // Giả lập màu nền gradient lớn
-        gradient: LinearGradient(
-          colors: [Colors.purple.shade50, Colors.lightGreen.shade50],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Bên trái: Quà tặng và Text
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                // Avatar và Tên
-                Row(
-                  children: [
-                    CircleAvatar(
-                      radius: 20,
-                      backgroundColor: Colors.green,
-                      child: Text('HT', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-                    ),
-                    const SizedBox(width: 10),
-                    const Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text('Hà Văn Tùng', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                        Text('Khoa Dược', style: TextStyle(fontSize: 12, color: Colors.black54)),
-                      ],
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 10),
-                // Button Gửi lời chúc
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 8),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: Colors.blue.shade300),
-                  ),
-                  child: const Text(
-                    'Gửi lời chúc',
-                    style: TextStyle(color: Colors.blue, fontWeight: FontWeight.w600, fontSize: 13),
-                  ),
-                ),
-              ],
-            ),
+  // Giả định đang ở trong một Widget sử dụng Controller có chứa các biến RxList trên
+// Ví dụ: final MyController controller = Get.find();
+
+  Widget _buildBirthdayBanner(HomeController controller) {
+    // Lấy Controller của  (ví dụ: MyController)
+    // Nếu  đang ở trong Controller, sẽ truy cập trực tiếp các biến
+    // Nếu  đang ở View (Widget), cần Get.find() hoặc truyền Controller vào.
+    // Giả định: final MyController controller = Get.find();
+    // KHÔNG CÓ CONTROLLER: Dùng dữ liệu giả lập để minh họa
+    // Giả sử, chúng ta truy cập Controller để lấy dữ liệu.
+
+    // 1. Bọc bằng Obx để theo dõi sự thay đổi của todayPriorityBirthdays
+    return Obx(() {
+      // 2. Lấy dữ liệu người sinh nhật đầu tiên
+      final List<User> birthdays = controller.AlltodayPriorityBirthdays.value;
+
+      // 3. Kiểm tra: Nếu danh sách rỗng, ẩn toàn bộ khối bằng SizedBox.shrink()
+      if (birthdays.isEmpty) {
+        return const SizedBox.shrink();
+      }
+
+      // Lấy người sinh nhật đầu tiên để hiển thị banner chính
+      final User birthdayPerson = birthdays.first;
+
+      // (Optional) Kiểm tra xem có nhiều người sinh nhật không
+      final bool hasMultipleBirthdays = birthdays.length > 1;
+
+
+      // 4. Nếu có người sinh nhật, hiển thị khối Banner
+      return Container(
+        height: 160,
+        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          // Giả lập màu nền gradient lớn
+          gradient: LinearGradient(
+            colors: [Colors.purple.shade50, Colors.lightGreen.shade50],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
           ),
-          // Bên phải: Ảnh quà tặng trang trí (Giả lập)
-          const Align(
-            alignment: Alignment.topRight,
-            child: Icon(Icons.cake, color: Colors.pink, size: 40),
-          )
-        ],
-      ),
-    );
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Bên trái: Quà tặng và Text
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  // Avatar và Tên (Sử dụng dữ liệu động)
+                  Row(
+                    children: [
+                      CircleAvatar(
+                        radius: 20,
+                        // Lấy màu từ model
+                        backgroundColor: birthdayPerson.color,
+                        // Lấy initials từ model
+                        child: Text(
+                            birthdayPerson.initials,
+                            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Lấy tên từ model
+                          Text(
+                              birthdayPerson.name,
+                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)
+                          ),
+                          // Thêm thông báo nếu có nhiều hơn 1 người sinh nhật
+                          if (hasMultipleBirthdays)
+                            Text(
+                                '+ ${birthdays.length - 1} người khác cùng ngày',
+                                style: const TextStyle(fontSize: 12, color: Colors.black)
+                            )
+                          else
+                            const Text('Sinh nhật hôm nay!', style: TextStyle(fontSize: 12, color: Colors.black)),
+                        ],
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                  // Button Gửi lời chúc (đã có InkWell)
+                  InkWell(
+                    onTap: () {
+                      // Logic: Mở danh sách sinh nhật chi tiết (sử dụng AlltodayPriorityBirthdays)
+                      print('Mở danh sách sinh nhật để gửi lời chúc!');
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(color: Colors.blue.shade300),
+                      ),
+                      child: const Text(
+                        'Gửi lời chúc',
+                        style: TextStyle(color: Colors.blue, fontWeight: FontWeight.w600, fontSize: 13),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            // Bên phải: Ảnh quà tặng trang trí (Giả lập)
+            const Align(
+              alignment: Alignment.topRight,
+              child: Icon(Icons.cake, color: Colors.pink, size: 40),
+            )
+          ],
+        ),
+      );
+    });
   }
 
   // Widget phụ cho _buildFeedPost
