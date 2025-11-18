@@ -54,7 +54,7 @@ class HomeController extends GetxController {
       User(name: 'Nguyễn Văn Nam', initials: 'NN', color: Colors.blue, dateOfBirth: DateTime(1985, 11, 18)),
       User(name: 'Phạm Thị Mai', initials: 'PM', color: Colors.red, dateOfBirth: DateTime(1992, 11, 18)), // Người sinh nhật thứ 3
       User(name: 'Đào Duy Anh', initials: 'ĐA', color: Colors.brown, dateOfBirth: DateTime(1993, 7, 10)), // Không sinh nhật
-      // ... Thêm nhiều người dùng khác
+      User(name: 'Phạm Tiến Thành', initials: 'ĐA', color: Colors.brown, dateOfBirth: DateTime(1993, 11, 18)),
     ];
 
     allUsers.value = mockAllUsers; // Lưu toàn bộ danh sách
