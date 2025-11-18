@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart'; // Thay Cupertino bằng Material
 import 'package:get/get.dart';
 // Import các Service và Model cần thiết cho API
-import '../../../data/services/login/login.service.dart'; // Thay đổi đường dẫn cho phù hợp
-import '../../../data/models/login/login.model.dart'; // Thay đổi đường dẫn cho phù hợp
+import '../../../data/services/login/login.service.dart';
+import '../../../data/models/login/login.model.dart';
 
 class LoginController extends GetxController {
   // Khởi tạo AuthService
@@ -35,7 +35,7 @@ class LoginController extends GetxController {
       final response = await _authService.login(email, password, deviceId);
 
       if (response.code == 200 && response.data != null) {
-        // --- ĐĂNG NHẬP THÀNH CÔNG ---
+        // 1 --- ĐĂNG NHẬP THÀNH CÔNG ---
         isLoggedIn.value = true;
         userEmail.value = response.data!.context.email;
         accessToken.value = response.data!.token;
@@ -45,7 +45,19 @@ class LoginController extends GetxController {
 
         Get.offNamed('/home'); // Thay /loading bằng /home hoặc trang chính
 
-      } else {
+      }
+      //2 -----sai mật khẩu
+      else if(response.code == 401 || !response.status){
+        Get.snackbar(
+          'tên đăng nhập hoặc mật khẩu không đúng',
+          response.message,
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.redAccent,
+          colorText:Colors.white,
+
+        );
+      }
+      else {
         // Xử lý lỗi trả về từ API (nếu code != 200 nhưng không throw exception)
         Get.snackbar('Lỗi Đăng nhập', response.message, snackPosition: SnackPosition.BOTTOM);
       }
