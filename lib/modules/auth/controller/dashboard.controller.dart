@@ -43,7 +43,7 @@ class DashboardController extends GetxController {
 
     // Dữ liệu giả lập cho báo cáo 1
     budgetExecutionReport.value = BudgetReport(
-      title: "TÌNH HÌNH THỰC HIỆN KẾ HOẠCH NGÂN SÁCH",
+      title: "TÌNH HÌNH THỰC HIỆN KẾ HOẠCH NGÂN SÁCH THÀNH",
       dateContext: "Đến ngày: 19/11/2025",
       unit: "Triệu đồng",
       dataValue: 45.7,
@@ -51,6 +51,27 @@ class DashboardController extends GetxController {
 
     // Dữ liệu giả lập cho báo cáo 2
     budgetUsageReport.value = BudgetReport(
+      title: "TÌNH HÌNH SỬ DỤNG NGÂN SÁCH",
+      dateContext: "Kỳ: Năm nay",
+      unit: "Triệu đồng",
+      dataValue: 90.5,
+    );
+    budgetUsageReport.value = BudgetReport(
+      title: "TÌNH HÌNH SỬ DỤNG NGÂN SÁCH",
+      dateContext: "Kỳ: Năm nay",
+      unit: "Triệu đồng",
+      dataValue: 90.5,
+    );budgetUsageReport.value = BudgetReport(
+      title: "TÌNH HÌNH SỬ DỤNG NGÂN SÁCH",
+      dateContext: "Kỳ: Năm nay",
+      unit: "Triệu đồng",
+      dataValue: 90.5,
+    );budgetUsageReport.value = BudgetReport(
+      title: "TÌNH HÌNH SỬ DỤNG NGÂN SÁCH",
+      dateContext: "Kỳ: Năm nay",
+      unit: "Triệu đồng",
+      dataValue: 90.5,
+    );budgetUsageReport.value = BudgetReport(
       title: "TÌNH HÌNH SỬ DỤNG NGÂN SÁCH",
       dateContext: "Kỳ: Năm nay",
       unit: "Triệu đồng",

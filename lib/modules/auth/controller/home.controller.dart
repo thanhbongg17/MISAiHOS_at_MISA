@@ -5,7 +5,12 @@ import 'package:flutter/material.dart';
 import '../../../data/models/home/home.model.dart';
 import '../../../data/models/user/user.model.dart';
 import '../view/birthday/birthday.list.page.dart';
-import '../../../data/models/user/user.model.dart';
+import '../view/home/home.page.view.dart';
+// FunctionItem comes from home_model
+import '../../home/pages/contacts.page.dart';
+import '../../home/pages/chat.page.dart';
+import '../../home/pages/more.page.dart';
+import '../../auth/view/dashboard/dashboard.page.dart';
 
 
 
@@ -13,23 +18,32 @@ class HomeController extends GetxController {
   // --- Các biến trạng thái đơn giản ---
   var notificationCount = 1.obs;
   var currentPage = 0.obs; // Thêm biến theo dõi trang hiện tại
+  var currentIndex = 0.obs;
   final List<Widget> pages = [
-    // Giả định trang chính hiện tại là HomePage (nếu bạn dùng nó làm Container)
-    const MainFeedContent(), // 0. Bảng tin (Nội dung chính của HomePage)
-    const ContactsPage(),    // 1. Danh bạ (Cần tạo file này)
-    const ReportPage(),      // 2. Báo cáo (Cần tạo file này)
-    const ChatPage(),        // 3. Chat (Cần tạo file này)
-    const MorePage(),        // 4. Thêm (Cần tạo file này)
+    HomePageView(), // 0. Bảng tin (Nội dung chính của HomePage)
+    ContactsPage(), // 1. Danh bạ
+    DashboardPage(), // 2. Báo cáo
+    ChatPage(), // 3. Chat
+    MorePage(), // 4. Thêm
   ];
 
   // Hàm được gọi khi người dùng nhấn vào một tab
   void changePage(int index) {
+    // Update both page indicators: `currentPage` for PageView dots and
+    // `currentIndex` for bottom navigation / main content selection.
     currentPage.value = index;
+    currentIndex.value = index;
     // Get.toNamed('/routeName'); // Nếu bạn dùng named routes
+  //   if (index == 2) {
+  //   Get.toNamed('/report');
+  // }
   }
   @override
   void onInit() {
     super.onInit();
+    // Debug lifecycle
+    // ignore: avoid_print
+    print('[HomeController] onInit called');
     fetchFeedPosts();
     fetchUsersAndBirthdays();
   }
@@ -64,7 +78,7 @@ class HomeController extends GetxController {
   void fetchUsersAndBirthdays() async {
     // 2.1. Giả lập Dữ liệu từ API/DB
     final mockAllUsers = [
-      User(name: 'Hà Văn Tùng', initials: 'HT', color: Colors.green, dateOfBirth: DateTime(1990, 11, 18)),
+      User(name: 'Hà Văn Tùng', initials: 'HT', color: Colors.green, dateOfBirth: DateTime(1990, 11, 20)),
       User(name: 'Lê Thu Linh', initials: 'LL', color: Colors.purple, dateOfBirth: DateTime(1995, 11, 18)), // Không sinh nhật
       User(name: 'Nguyễn Văn Nam', initials: 'NN', color: Colors.blue, dateOfBirth: DateTime(1985, 11, 19)),
       User(name: 'Phạm Thị Mai', initials: 'PM', color: Colors.red, dateOfBirth: DateTime(1992, 11, 19)), // Người sinh nhật thứ 3
@@ -94,7 +108,8 @@ class HomeController extends GetxController {
     // Sử dụng Get.to() hoặc hiển thị dialog chứa allUsers.value
 
     if (allUsers.isNotEmpty) {
-      Get.to(() => BirthdayListPage(birthdays: AlltodayPriorityBirthdays.value)); // Gọi trang mới
+      // Pass a plain List<User> (not an RxList) to the page constructor
+      Get.to(() => BirthdayListPage(birthdays: AlltodayPriorityBirthdays.toList())); // Gọi trang mới
 
     } else {
       Get.snackbar('Thông báo', 'Hôm nay không có ai sinh nhật!', snackPosition: SnackPosition.BOTTOM);
@@ -146,6 +161,9 @@ class HomeController extends GetxController {
 
     feedPosts.value = mockData;
     isLoading.value = false;
+    // Debug: report feed size
+    // ignore: avoid_print
+    print('[HomeController] fetchFeedPosts loaded ${feedPosts.length} posts');
   }
 
   // --- Hàm xử lý Logic Business/Action (Like) ---
@@ -159,38 +177,14 @@ class HomeController extends GetxController {
       timeAgo: post.timeAgo,
       content: post.content,
       attachmentName: post.attachmentName,
-      initialLikes: post.isLiked ? post.initialLikes - 1 : post.initialLikes + 1,//lỗi cc gì thế này
+      initialLikes: post.isLiked ? post.initialLikes - 1 : post.initialLikes + 1,
       isLiked: !post.isLiked,
     );
 
     feedPosts[index] = newPost;
   }
 }
-// điều hướng trang
-// Giả lập các trang đích (Bạn cần tạo các file/class này)
-//====1
-class MainFeedContent extends StatelessWidget {
-  const MainFeedContent({super.key});
-  // Đặt nội dung Bảng tin chính ở đây
-  @override Widget build(BuildContext context) => const Text("Nội dung Bảng tin");
-}
-//====2
-class ContactsPage extends StatelessWidget {
-  const ContactsPage({super.key});
-  @override Widget build(BuildContext context) => const Center(child: Text("Trang Danh bạ"));
-}
-//====3
-class ReportPage extends StatelessWidget {
-  const ReportPage({super.key});
-  @override Widget build(BuildContext context) => const Center(child: Text("Trang Báo cáo"));
-}
-//====4
-class ChatPage extends StatelessWidget {
-  const ChatPage({super.key});
-  @override Widget build(BuildContext context) => const Center(child: Text("Trang Chat"));
-}
-//====5
-class MorePage extends StatelessWidget {
-  const MorePage({super.key});
-  @override Widget build(BuildContext context) => const Center(child: Text("Trang Thêm"));
-}
+// Note: placeholder pages were removed to avoid duplicate symbol
+// definitions with `lib/modules/home/home.page.dart`.
+// Implement your real destination pages (ContactsPage, ChatPage, etc.)
+// in their own files under `lib/modules/...` and import them where needed.

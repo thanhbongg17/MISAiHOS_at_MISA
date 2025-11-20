@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import '../../controller/dashboard.controller.dart'; // Thay đổi đường dẫn
 import '../../../../data/models/dashboard/dashboard.model.dart'; // Thay đổi đường dẫn
 
+
 class DashboardPage extends StatelessWidget {
   const DashboardPage({super.key});
 
@@ -18,6 +19,7 @@ class DashboardPage extends StatelessWidget {
         automaticallyImplyLeading: false, // Bỏ nút back
         title: const Text(
           'Tổng quan',
+          textAlign: TextAlign.left,
           style: TextStyle(
             fontWeight: FontWeight.bold,
             fontSize: 24,
@@ -57,6 +59,16 @@ class DashboardPage extends StatelessWidget {
             const SizedBox(height: 20),
 
             // --- Phần 2: TÌNH HÌNH SỬ DỤNG NGÂN SÁCH ---
+            Obx(() => _buildReportCard(
+              controller: controller,
+              report: controller.budgetUsageReport.value,
+              isLoading: controller.isLoading.value,
+            )),
+            Obx(() => _buildReportCard(
+              controller: controller,
+              report: controller.budgetUsageReport.value,
+              isLoading: controller.isLoading.value,
+            )),
             Obx(() => _buildReportCard(
               controller: controller,
               report: controller.budgetUsageReport.value,
