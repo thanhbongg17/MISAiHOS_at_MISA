@@ -43,7 +43,10 @@ class LoginController extends GetxController {
 
         // Lưu Token/Context vào bộ nhớ cục bộ (GetStorage) ở đây nếu cần
 
-        Get.offNamed('/home'); // Thay /loading bằng /home hoặc trang chính
+        // Navigate to named route so route-level bindings run and HomeController is created
+        print('[LoginController] login successful, navigating to /maincontent');
+        Get.snackbar('Đăng nhập', 'Đăng nhập thành công', snackPosition: SnackPosition.BOTTOM);
+        Get.offAllNamed('/loading');
 
       }
       //2 -----sai mật khẩu

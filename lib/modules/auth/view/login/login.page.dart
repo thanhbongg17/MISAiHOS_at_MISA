@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import '../../controller/login.controller.dart';
 
 class LoginPage extends StatefulWidget {
@@ -9,7 +10,7 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-  final controller = LoginController();
+  final controller = Get.put(LoginController());
   final emailCtrl = TextEditingController();
   final passCtrl = TextEditingController();
   bool showPass = false;
@@ -101,6 +102,7 @@ class _LoginPageState extends State<LoginPage> {
                               style: TextStyle(color: Color(0xFF5A63D9)),
                             ),
                           ),
+
 
                           const SizedBox(height: 200),
                           Image.asset("assets/images/logo.png", width: 150),

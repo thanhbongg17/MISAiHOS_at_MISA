@@ -7,8 +7,8 @@ class LoadingPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // Chuyển sang Home sau 2 giây
-    Future.delayed(const Duration(seconds: 2), () {
-      Get.offNamed('/home');
+    Future.delayed(const Duration(seconds: 1), () {
+      Get.offNamed('/maincontent');
     });
 
     return Scaffold(
