@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../../controller/login.controller.dart';
 import '../../controller/home.controller.dart';
 import '../../../../data/models/home/home.model.dart';
 import '../../../../data/models/user/user.model.dart';
-
 
 class HomePageView extends StatelessWidget {
   const HomePageView({super.key});
@@ -13,7 +11,6 @@ class HomePageView extends StatelessWidget {
   Widget build(BuildContext context) {
     // Khởi tạo Controller và đưa vào bộ nhớ
     final HomeController controller = Get.put(HomeController());
-
 
     return Scaffold(
       body: SafeArea(
@@ -24,7 +21,6 @@ class HomePageView extends StatelessWidget {
 
             // --- Phần 2: Menu Chức năng (Lấy từ Controller) ---
             _buildFunctionMenu(controller), // Truyền controller vào đây
-
             // --- Phần 3: Danh sách người dùng Tùng, Linh, Tất cả (Static) ---
             _buildUserList(controller),
 
@@ -59,8 +55,8 @@ class HomePageView extends StatelessWidget {
           ],
         ),
       ),
-      // --- Phần 6: Bottom Navigation Bar ---
 
+      // --- Phần 6: Bottom Navigation Bar ---
     );
   }
 
@@ -95,29 +91,39 @@ class HomePageView extends StatelessWidget {
               ),
               const SizedBox(width: 15),
               // Icon Chat
-              const Icon(Icons.chat_bubble_outline, color: Colors.blueGrey, size: 28),
+              const Icon(
+                Icons.chat_bubble_outline,
+                color: Colors.blueGrey,
+                size: 28,
+              ),
               const SizedBox(width: 15),
               // Icon Thông báo (Sử dụng Obx để theo dõi notificationCount)
-              Obx(() => Stack(
-                children: [
-                  const Icon(Icons.notifications_none, color: Colors.blueGrey, size: 28),
-                  if (controller.notificationCount.value > 0)
-                    Positioned(
-                      right: 0,
-                      child: Container(
-                        padding: const EdgeInsets.all(2),
-                        decoration: BoxDecoration(
-                          color: Colors.red,
-                          borderRadius: BorderRadius.circular(6),
-                        ),
-                        constraints: const BoxConstraints(
-                          minWidth: 12,
-                          minHeight: 12,
+              Obx(
+                () => Stack(
+                  children: [
+                    const Icon(
+                      Icons.notifications_none,
+                      color: Colors.blueGrey,
+                      size: 28,
+                    ),
+                    if (controller.notificationCount.value > 0)
+                      Positioned(
+                        right: 0,
+                        child: Container(
+                          padding: const EdgeInsets.all(2),
+                          decoration: BoxDecoration(
+                            color: Colors.red,
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          constraints: const BoxConstraints(
+                            minWidth: 12,
+                            minHeight: 12,
+                          ),
                         ),
                       ),
-                    ),
-                ],
-              )),
+                  ],
+                ),
+              ),
             ],
           ),
         ],
@@ -129,76 +135,80 @@ class HomePageView extends StatelessWidget {
     // Khởi tạo PageController ngoài Obx để tránh tạo lại
     final PageController pageController = PageController();
 
-    return Obx(() => Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-      padding: const EdgeInsets.fromLTRB(6, 15, 6, 6),
-      decoration:  BoxDecoration(
-        color: Color.fromARGB(255, 230, 245, 255),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: Colors.lightBlue,
-          width: 0.5,
+    return Obx(
+      () => Container(
+        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        padding: const EdgeInsets.fromLTRB(6, 15, 6, 6),
+        decoration: BoxDecoration(
+          color: Color.fromARGB(255, 230, 245, 255),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.lightBlue, width: 0.5),
+        ),
+
+        child: Column(
+          children: [
+            // --- PHẦN NÀY ĐÃ ĐƯỢC THAY THẾ BẰNG PAGEVIEW ---
+            SizedBox(
+              height: 75, // Đặt chiều cao cố định cho PageView
+              // PageView sẽ chiếm toàn bộ chiều rộng có sẵn
+              child: PageView.builder(
+                controller: pageController,
+                itemCount: controller.totalPages, // Số lượng trang
+                onPageChanged:
+                    controller.updatePage, // Cập nhật trạng thái trang
+                itemBuilder: (context, pageIndex) {
+                  // Logic tính toán các mục cho trang hiện tại
+                  final itemsPerPage = 4;
+                  final start = pageIndex * itemsPerPage;
+                  final end = (pageIndex * itemsPerPage) + itemsPerPage;
+
+                  // Lấy các mục (items) cho trang này
+                  final pageItems = controller.functionItems.sublist(
+                    start,
+                    end > controller.functionItems.length
+                        ? controller.functionItems.length
+                        : end,
+                  );
+
+                  // Hiển thị các mục trong một Row
+                  return Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: pageItems.map((item) {
+                      return _menuItem(item.title, item.icon, item.color);
+                    }).toList(),
+                  );
+                },
+              ),
+            ),
+
+            // --- KẾT THÚC PAGEVIEW ---
+            const SizedBox(height: 10),
+
+            // Dấu chấm trang động (Logic này đã đúng)
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: List.generate(
+                controller.totalPages,
+                (index) => Obx(
+                  () => _pageDot(
+                    controller.currentPage.value == index,
+                    // Đây là hàm onTap được truyền vào:
+                    () {
+                      pageController.animateToPage(
+                        index,
+                        duration: const Duration(milliseconds: 300),
+                        curve: Curves.easeIn,
+                      );
+                    },
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 5),
+          ],
         ),
       ),
-
-      child: Column(
-        children: [
-          // --- PHẦN NÀY ĐÃ ĐƯỢC THAY THẾ BẰNG PAGEVIEW ---
-          SizedBox(
-            height: 75, // Đặt chiều cao cố định cho PageView
-            // PageView sẽ chiếm toàn bộ chiều rộng có sẵn
-            child: PageView.builder(
-              controller: pageController,
-              itemCount: controller.totalPages, // Số lượng trang
-              onPageChanged: controller.updatePage, // Cập nhật trạng thái trang
-              itemBuilder: (context, pageIndex) {
-                // Logic tính toán các mục cho trang hiện tại
-                final itemsPerPage = 4;
-                final start = pageIndex * itemsPerPage;
-                final end = (pageIndex * itemsPerPage) + itemsPerPage;
-
-                // Lấy các mục (items) cho trang này
-                final pageItems = controller.functionItems.sublist(
-                    start,
-                    end > controller.functionItems.length ? controller.functionItems.length : end
-                );
-
-                // Hiển thị các mục trong một Row
-                return Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: pageItems.map((item) {
-                    return _menuItem(item.title, item.icon, item.color);
-                  }).toList(),
-                );
-              },
-            ),
-          ),
-          // --- KẾT THÚC PAGEVIEW ---
-
-          const SizedBox(height: 10),
-
-          // Dấu chấm trang động (Logic này đã đúng)
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: List.generate(
-              controller.totalPages,
-                  (index) => Obx(() => _pageDot(
-                  controller.currentPage.value == index,
-                  // Đây là hàm onTap được truyền vào:
-                      () {
-                    pageController.animateToPage(
-                      index,
-                      duration: const Duration(milliseconds: 300),
-                      curve: Curves.easeIn,
-                    );
-                  }
-              )),
-            ),
-          ),
-          const SizedBox(height: 5),
-        ],
-      ),
-    ));
+    );
   }
 
   // --- HÀM SỬA ĐỔI ĐỂ SỬ DỤNG DỮ LIỆU ĐỘNG VÀ LOGIC LIKE THEO INDEX ---
@@ -221,8 +231,17 @@ class HomePageView extends StatelessWidget {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(post.userName, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
-                  Text(post.timeAgo, style: const TextStyle(fontSize: 12, color: Colors.black54)),
+                  Text(
+                    post.userName,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 15,
+                    ),
+                  ),
+                  Text(
+                    post.timeAgo,
+                    style: const TextStyle(fontSize: 12, color: Colors.black54),
+                  ),
                 ],
               ),
               const Spacer(),
@@ -286,9 +305,9 @@ class HomePageView extends StatelessWidget {
                     Text(
                       'Thích ${post.initialLikes > 0 ? post.initialLikes : ''}',
                       style: TextStyle(
-                          color: post.isLiked ? Colors.blue : Colors.grey,
-                          fontWeight: FontWeight.w600,
-                          fontSize: 13
+                        color: post.isLiked ? Colors.blue : Colors.grey,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 13,
                       ),
                     ),
                   ],
@@ -300,7 +319,10 @@ class HomePageView extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 10),
-          const Text('4 người xem', style: TextStyle(fontSize: 13, color: Colors.black54)),
+          const Text(
+            '4 người xem',
+            style: TextStyle(fontSize: 13, color: Colors.black54),
+          ),
         ],
       ),
     );
@@ -312,9 +334,11 @@ class HomePageView extends StatelessWidget {
   // home_page.dart (Sửa _menuItem)
 
   Widget _menuItem(String title, IconData icon, Color color) {
-    return Material( // 1. Bọc bằng Material
+    return Material(
+      // 1. Bọc bằng Material
       color: Colors.transparent,
-      child: InkWell( // 2. Sử dụng InkWell để có hiệu ứng chạm
+      child: InkWell(
+        // 2. Sử dụng InkWell để có hiệu ứng chạm
         onTap: () {
           // LOGIC KHI NHẤN VÀO ICON
           Get.snackbar(
@@ -330,7 +354,8 @@ class HomePageView extends StatelessWidget {
         splashColor: Colors.grey.withOpacity(0.3),
         highlightColor: Colors.grey.withOpacity(0.1),
 
-        child: Padding( // 3. Thêm Padding để nới rộng khu vực chạm
+        child: Padding(
+          // 3. Thêm Padding để nới rộng khu vực chạm
           padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
           child: Column(
             children: [
@@ -357,9 +382,11 @@ class HomePageView extends StatelessWidget {
   // home_page.dart (Sửa _pageDot)
 
   Widget _pageDot(bool isActive, VoidCallback onTap) {
-    return Material( // Bọc bằng Material để InkWell hoạt động
+    return Material(
+      // Bọc bằng Material để InkWell hoạt động
       color: Colors.transparent, // Nền trong suốt
-      child: InkWell( // Sử dụng InkWell để có hiệu ứng ripple
+      child: InkWell(
+        // Sử dụng InkWell để có hiệu ứng ripple
         onTap: onTap,
         borderRadius: BorderRadius.circular(10), // Bo góc cho hiệu ứng ripple
         splashColor: Colors.grey.withOpacity(0.3), // Màu hiệu ứng khi chạm
@@ -377,7 +404,6 @@ class HomePageView extends StatelessWidget {
     );
   }
 
-
   Widget _buildUserList(HomeController controller) {
     return Obx(() {
       // 1. ẨN KHỐI NẾU KHÔNG CÓ AI SINH NHẬT
@@ -394,7 +420,7 @@ class HomePageView extends StatelessWidget {
             // Lặp qua danh sách sinh nhật ƯU TIÊN (tối đa 2 người)
             ...controller.todayPriorityBirthdays.map((user) {
               return _userAvatar(user.name, user.initials, user.color);
-            }).toList(),
+            }),
 
             // Mục "Tất cả" (Thêm logic onTap)
             GestureDetector(
@@ -414,7 +440,13 @@ class HomePageView extends StatelessWidget {
         CircleAvatar(
           radius: 20,
           backgroundColor: color,
-          child: Text(initial, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+          child: Text(
+            initial,
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
         ),
         const SizedBox(height: 5),
         Text(name, style: const TextStyle(fontSize: 13, color: Colors.black54)),
@@ -423,7 +455,7 @@ class HomePageView extends StatelessWidget {
   }
 
   // Giả định đang ở trong một Widget sử dụng Controller có chứa các biến RxList trên
-// Ví dụ: final MyController controller = Get.find();
+  // Ví dụ: final MyController controller = Get.find();
 
   Widget _buildBirthdayBanner(HomeController controller) {
     // Lấy Controller của  (ví dụ: MyController)
@@ -448,7 +480,6 @@ class HomePageView extends StatelessWidget {
 
       // (Optional) Kiểm tra xem có nhiều người sinh nhật không
       final bool hasMultipleBirthdays = birthdays.length > 1;
-
 
       // 4. Nếu có người sinh nhật, hiển thị khối Banner
       return Container(
@@ -482,8 +513,11 @@ class HomePageView extends StatelessWidget {
                         backgroundColor: birthdayPerson.color,
                         // Lấy initials từ model
                         child: Text(
-                            birthdayPerson.initials,
-                            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)
+                          birthdayPerson.initials,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
                       const SizedBox(width: 10),
@@ -492,17 +526,29 @@ class HomePageView extends StatelessWidget {
                         children: [
                           // Lấy tên từ model
                           Text(
-                              birthdayPerson.name,
-                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)
+                            birthdayPerson.name,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
                           ),
                           // Thêm thông báo nếu có nhiều hơn 1 người sinh nhật
                           if (hasMultipleBirthdays)
                             Text(
-                                '+ ${birthdays.length - 1} người khác cùng ngày',
-                                style: const TextStyle(fontSize: 12, color: Colors.black)
+                              '+ ${birthdays.length - 1} người khác cùng ngày',
+                              style: const TextStyle(
+                                fontSize: 12,
+                                color: Colors.black,
+                              ),
                             )
                           else
-                            const Text('Sinh nhật hôm nay!', style: TextStyle(fontSize: 12, color: Colors.black)),
+                            const Text(
+                              'Sinh nhật hôm nay!',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.black,
+                              ),
+                            ),
                         ],
                       ),
                     ],
@@ -515,7 +561,10 @@ class HomePageView extends StatelessWidget {
                       print('Mở danh sách sinh nhật để gửi lời chúc!');
                     },
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 8),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 15,
+                        vertical: 8,
+                      ),
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(20),
@@ -523,7 +572,11 @@ class HomePageView extends StatelessWidget {
                       ),
                       child: const Text(
                         'Gửi lời chúc',
-                        style: TextStyle(color: Colors.blue, fontWeight: FontWeight.w600, fontSize: 13),
+                        style: TextStyle(
+                          color: Colors.blue,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 13,
+                        ),
                       ),
                     ),
                   ),
@@ -534,7 +587,7 @@ class HomePageView extends StatelessWidget {
             const Align(
               alignment: Alignment.topRight,
               child: Icon(Icons.cake, color: Colors.pink, size: 40),
-            )
+            ),
           ],
         ),
       );
@@ -547,10 +600,15 @@ class HomePageView extends StatelessWidget {
       children: [
         Icon(icon, color: Colors.grey, size: 20),
         const SizedBox(width: 5),
-        Text(title, style: const TextStyle(color: Colors.grey, fontWeight: FontWeight.w600, fontSize: 13)),
+        Text(
+          title,
+          style: const TextStyle(
+            color: Colors.grey,
+            fontWeight: FontWeight.w600,
+            fontSize: 13,
+          ),
+        ),
       ],
     );
   }
-
-
 }

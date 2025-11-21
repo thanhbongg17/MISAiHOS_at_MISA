@@ -1,11 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../auth/controller/home.controller.dart';
-import '../../data/models/home/home.model.dart';
-import '../../data/models/user/user.model.dart';
 import '../auth/view/home/home.page.view.dart';
-import 'dart:math' as math;
-
 
 class MainFeedContent extends StatelessWidget {
   const MainFeedContent({super.key});
@@ -14,8 +10,8 @@ class MainFeedContent extends StatelessWidget {
   Widget build(BuildContext context) {
     // Ensure HomeController is registered. If not, create and register it.
     final HomeController controller = Get.isRegistered<HomeController>()
-      ? Get.find<HomeController>()
-      : Get.put(HomeController());
+        ? Get.find<HomeController>()
+        : Get.put(HomeController());
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -25,7 +21,9 @@ class MainFeedContent extends StatelessWidget {
 
         print('[MainFeedContent] pages=${pages.length} idx=$idx');
 
-        final List<Widget> safePages = pages.isEmpty ? [const HomePageView()] : pages;
+        final List<Widget> safePages = pages.isEmpty
+            ? [const HomePageView()]
+            : pages;
 
         return Stack(
           children: [
@@ -42,12 +40,14 @@ class MainFeedContent extends StatelessWidget {
               right: 12,
               top: 12,
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 6,
+                ),
                 decoration: BoxDecoration(
                   color: Colors.black.withOpacity(0.6),
                   borderRadius: BorderRadius.circular(8),
                 ),
-
               ),
             ),
           ],
@@ -58,6 +58,7 @@ class MainFeedContent extends StatelessWidget {
       bottomNavigationBar: _buildBottomNavBar(controller),
     );
   }
+
   Widget _buildBottomNavBar(HomeController controller) {
     return Container(
       decoration: const BoxDecoration(
@@ -65,7 +66,7 @@ class MainFeedContent extends StatelessWidget {
       ),
       // 🌟 BỌC BẰNG Obx ĐỂ THEO DÕI TRẠNG THÁI currentIndex
       child: Obx(
-            () => BottomNavigationBar(
+        () => BottomNavigationBar(
           type: BottomNavigationBarType.fixed,
           selectedItemColor: Colors.teal, // Màu theo ảnh
           unselectedItemColor: Colors.grey,
@@ -85,27 +86,29 @@ class MainFeedContent extends StatelessWidget {
 
             // Icon Chat với Badge (Sử dụng Obx)
             BottomNavigationBarItem(
-              icon: Obx(() => Stack(
-                children: [
-                  const Icon(Icons.chat_bubble_outline),
-                  if (controller.notificationCount.value > 0)
-                    Positioned(
-                      right: 0,
-                      top: 0,
-                      child: Container(
-                        padding: const EdgeInsets.all(2),
-                        decoration: BoxDecoration(
-                          color: Colors.red,
-                          borderRadius: BorderRadius.circular(6),
-                        ),
-                        constraints: const BoxConstraints(
-                          minWidth: 10,
-                          minHeight: 10,
+              icon: Obx(
+                () => Stack(
+                  children: [
+                    const Icon(Icons.chat_bubble_outline),
+                    if (controller.notificationCount.value > 0)
+                      Positioned(
+                        right: 0,
+                        top: 0,
+                        child: Container(
+                          padding: const EdgeInsets.all(2),
+                          decoration: BoxDecoration(
+                            color: Colors.red,
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          constraints: const BoxConstraints(
+                            minWidth: 10,
+                            minHeight: 10,
+                          ),
                         ),
                       ),
-                    ),
-                ],
-              )),
+                  ],
+                ),
+              ),
               label: 'Chat',
             ),
             _navBarItem(Icons.more_horiz, 'Thêm'),
@@ -117,11 +120,8 @@ class MainFeedContent extends StatelessWidget {
 
   // Widget phụ cho BottomNavigationBar
   BottomNavigationBarItem _navBarItem(IconData icon, String label) {
-    return BottomNavigationBarItem(
-      icon: Icon(icon),
-      label: label,
-    );
+    return BottomNavigationBarItem(icon: Icon(icon), label: label);
   }
-
 }
+
 //MainFeedContent
