@@ -47,14 +47,8 @@ class AuthService {
       final jsonMap = jsonDecode(utf8.decode(response.bodyBytes)) as Map<String, dynamic>;
       final loginResponse = LoginResponse.fromJson(jsonMap);
 
-      if (loginResponse.code == 200 && loginResponse.status) {
-        // Đăng nhập thành công, lưu Token vào bộ nhớ cục bộ (SharedPreferences/GetStorage)
-        // và chuyển hướng người dùng
-        return loginResponse;
-      } else {
-        // Đăng nhập thất bại (Message nằm trong loginResponse.message)
-        throw Exception(loginResponse.message);
-      }
+      // Trả về response để controller xử lý, không throw exception
+      return loginResponse;
     } catch (e) {
       throw Exception("Lỗi kết nối hoặc xử lý dữ liệu: $e");
     }

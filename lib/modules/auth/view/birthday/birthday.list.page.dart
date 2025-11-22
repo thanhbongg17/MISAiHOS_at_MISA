@@ -5,14 +5,12 @@ import '../../../../data/models/user/user.model.dart'; // Import User model
 class BirthdayListPage extends StatelessWidget {
   final List<User> birthdays;
 
-  const BirthdayListPage({Key? key, required this.birthdays}) : super(key: key);
+  const BirthdayListPage({super.key, required this.birthdays});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Tất cả Sinh nhật Hôm nay'),
-      ),
+      appBar: AppBar(title: const Text('Tất cả Sinh nhật Hôm nay')),
       body: ListView.builder(
         itemCount: birthdays.length,
         itemBuilder: (context, index) {
@@ -20,10 +18,15 @@ class BirthdayListPage extends StatelessWidget {
           return ListTile(
             leading: CircleAvatar(
               backgroundColor: user.color,
-              child: Text(user.initials, style: const TextStyle(color: Colors.white)),
+              child: Text(
+                user.initials,
+                style: const TextStyle(color: Colors.white),
+              ),
             ),
             title: Text(user.name),
-            subtitle: Text('Sinh nhật: ${user.dateOfBirth.day}/${user.dateOfBirth.month}'),
+            subtitle: Text(
+              'Sinh nhật: ${user.dateOfBirth.day}/${user.dateOfBirth.month}',
+            ),
           );
         },
       ),

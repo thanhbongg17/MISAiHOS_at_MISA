@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:get/get.dart'; // Make sure you import GetX here to recognize GetPage
 
 import 'users/users.routes.dart';
