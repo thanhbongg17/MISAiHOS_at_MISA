@@ -14,7 +14,9 @@ class LoginResponse {
 
   factory LoginResponse.fromJson(Map<String, dynamic> json) {
     return LoginResponse(
-      code: json['Code'] is int ? json['Code'] as int : int.tryParse('${json['Code']}') ?? 0,
+      code: json['Code'] is int
+          ? json['Code'] as int
+          : int.tryParse('${json['Code']}') ?? 0,
       message: json['Message'] as String? ?? '',
       data: json['Data'] != null
           ? LoginData.fromJson(json['Data'] as Map<String, dynamic>)
@@ -101,7 +103,9 @@ class UserContext {
       departmentName: json['DepartmentName'] as String? ?? '',
       roleApps: (json['RoleApps'] as List<dynamic>? ?? <dynamic>[]),
       useQLCB: json['UseQLCB'] as bool? ?? false,
-      gender: json['Gender'] is int ? json['Gender'] as int : int.tryParse('${json['Gender']}') ?? 0,
+      gender: json['Gender'] is int
+          ? json['Gender'] as int
+          : int.tryParse('${json['Gender']}') ?? 0,
     );
   }
 }

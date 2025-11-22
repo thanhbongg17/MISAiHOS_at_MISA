@@ -4,29 +4,75 @@ import 'package:get/get.dart';
 import '../../controller/otp.two.factor.controller.dart'; // Import Controller
 import '../../model/two_factor_arguments.dart';
 
-class TwoFactorAuthScreen extends StatelessWidget {
+
+// Chuyển thành StatefulWidget
+class TwoFactorAuthScreen extends StatefulWidget {
   const TwoFactorAuthScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    // Khởi tạo Controller
+  State<TwoFactorAuthScreen> createState() => _TwoFactorAuthScreenState();
+}
+
+class _TwoFactorAuthScreenState extends State<TwoFactorAuthScreen> {
+  late final TwoFactorController controller;
+  final FocusNode _focusNode = FocusNode();
+  final Color _misaGreen = const Color(0xFF27AE60);
+  final Color _misaBlue = const Color(0xFF3498DB);
+  final verificationCode = ''.obs;
+  final textController = TextEditingController();
+  bool _isKeypadVisible = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // Khởi tạo controller trong initState
     final args = Get.arguments as TwoFactorArguments?;
-    final TwoFactorController controller = Get.put(
+    controller = Get.put(
       TwoFactorController(
         arguments: args ??
             const TwoFactorArguments(
               userName: '',
               deviceId: '',
               challengeMessage:
-                  'Mã xác nhận đã được gửi. Vui lòng nhập mã vào ô dưới.',
+              'Mã xác nhận đã được gửi. Vui lòng nhập mã vào ô dưới.',
             ),
       ),
     );
 
-    // Layout chính
+    // Lắng nghe sự thay đổi của focus
+    _focusNode.addListener(() {
+      setState(() {
+        _isKeypadVisible = _focusNode.hasFocus;
+      });
+    });
+    // nhập mã xác thực
+    textController.addListener(() {
+      controller.verificationCode.value = textController.text;
+    });
+  }
+
+
+  @override
+  void dispose() {
+    _focusNode.dispose();
+    super.dispose();
+  }
+
+  // Hàm để ẩn bàn phím
+  void _hideKeypad() {
+    if (_isKeypadVisible) {
+      _focusNode.unfocus(); // Sẽ trigger listener và ẩn bàn phím
+    }
+  }
+
+
+  @override
+  Widget build(BuildContext context) {
+    final screenHeight = MediaQuery.of(context).size.height;
+    final keypadHeight = 300.0; // Ước tính chiều cao bàn phím
+
     return Scaffold(
       backgroundColor: Colors.white,
-      // Xóa AppBar mặc định và thay bằng nút Back
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(CupertinoIcons.back),
@@ -36,125 +82,90 @@ class TwoFactorAuthScreen extends StatelessWidget {
         backgroundColor: Colors.white,
         elevation: 0,
       ),
-      body: Stack(
-        children: [
-          // Nội dung cuộn chính
-          SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
+      // Dùng GestureDetector để khi nhấn ra ngoài thì ẩn bàn phím
+      resizeToAvoidBottomInset: true,//Cho phép giao diện tự co khi bàn phím xuất hiện
+      body: GestureDetector(
+        onTap: () => FocusScope.of(context).unfocus(),
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(24),
+          child: Center(
+            child:Column (
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                // Logo/Icon
-                const SizedBox(height: 20),
-                const Icon(
-                  Icons.add_box, // Giả lập Icon dấu cộng màu xanh
-                  color: Color(0xFF1ABC9C),
-                  size: 60,
-                ),
-                const SizedBox(height: 30),
-
-                // Tiêu đề
-                const Text(
-                  "Xác thực 2 bước",
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black87,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
+                Image.asset("assets/images/logo.png", width: 80,height:80),
                 const SizedBox(height: 10),
 
-                // Mô tả (Đã sử dụng dữ liệu tĩnh vì không có dữ liệu động)
+                // 2. Tiêu đề
+                const Text(
+                  "Xác thực 2 bước",
+                  style: TextStyle(fontSize: 24),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 5),
+                // 3. mã xác nhận đã đươợc gửi đến
                 Text(
                   controller.maskedDestination,
                   style: const TextStyle(
                     fontSize: 16,
-                    color: Colors.black54,
+
                   ),
-                  textAlign: TextAlign.center,
+                  // textAlign: TextAlign.center,
                 ),
-                const SizedBox(height: 40),
-
-                // Trường nhập mã xác thực (Chỉ để hiển thị input từ bàn phím tùy chỉnh)
-                _buildVerificationInputField(controller),
-                const SizedBox(height: 20),
-
-                // Checkbox "Không hỏi lại trên thiết bị này"
-                _buildRememberDeviceCheckbox(controller),
-                const SizedBox(height: 30),
-
-                // Nút "Vào ứng dụng"
-                _buildMainActionButton(context, controller),
+                //4 .ô nhập mã
                 const SizedBox(height: 15),
+                _buildVerificationInputField(controller),
 
-                // Nút "Thử cách khác" (TextLink)
-                TextButton(
-                  onPressed: () {
-                    Get.snackbar("Thử cách khác", "Chức năng gửi lại mã hoặc gọi điện.");
-                  },
-                  child: const Text(
-                    "Thử cách khác",
-                    style: TextStyle(
-                      color: Color(0xFF3498DB),
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
+                //5. không hỏi lại
+                const SizedBox(height: 5),
+                _buildRememberDeviceCheckbox(controller),
+                //6.Xacs nhận
                 const SizedBox(height: 10),
-
-                // Nút "Quay lại..."
+                _buildMainActionButton(context, controller),
+                // quay lại đăng nhập
                 TextButton(
                   onPressed: controller.navigateBackToLogin,
-                  child: const Text(
-                    "Quay lại...ng nhập",
+                  child: Text(
+                    "Quay lại đăng nhập",
                     style: TextStyle(
-                      color: Colors.grey,
-                      fontSize: 16,
-                      decoration: TextDecoration.underline,
+                      color: _misaBlue,
+                      fontSize: 14,
+                      decoration: TextDecoration.none,
                     ),
                   ),
                 ),
 
-                // Khoảng trống đệm, tránh nội dung bị che bởi bàn phím
-                const SizedBox(height: 350),
               ],
             ),
           ),
-
-          // Bàn phím số tùy chỉnh (Đẩy lên trên cùng)
-          Positioned(
-            bottom: 0,
-            left: 0,
-            right: 0,
-            child: _buildCustomKeypad(controller),
-          ),
-        ],
+        ),
       ),
     );
   }
 
-  // --- Các Widget phụ ---
+  // --- Các Widget phụ (Không thay đổi nhiều) ---
 
   Widget _buildVerificationInputField(TwoFactorController controller) {
-    return Obx(() => TextField(
-      readOnly: true, // Không cho phép keyboard mặc định
+    return TextField(
       showCursor: true,
       textAlign: TextAlign.center,
-      controller: TextEditingController(text: controller.verificationCode.value),
+      controller: textController,
+      keyboardType: TextInputType.number,
       decoration: InputDecoration(
         hintText: "Nhập mã xác thực",
-        counterText: "", // Ẩn bộ đếm ký tự
+        counterText: "",
         contentPadding: const EdgeInsets.symmetric(vertical: 15, horizontal: 20),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: const BorderSide(color: Colors.grey),
+          borderSide: const BorderSide(color: Colors.black54),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: const BorderSide(color: Color(0xFF3498DB), width: 2.0),
         ),
       ),
-      keyboardType: TextInputType.none, // Vô hiệu hóa bàn phím mặc định
-    ));
+    );
   }
+
 
   Widget _buildRememberDeviceCheckbox(TwoFactorController controller) {
     return Obx(() => Row(
@@ -162,157 +173,68 @@ class TwoFactorAuthScreen extends StatelessWidget {
       children: [
         Checkbox(
           value: controller.rememberDevice.value,
-          onChanged: controller.toggleRememberDevice,
-          activeColor: const Color(0xFF1ABC9C),
+          onChanged: (value) {
+            _hideKeypad(); // Ẩn bàn phím khi nhấn checkbox
+            controller.toggleRememberDevice(value);
+          },
+          activeColor: const Color(0xFF3498DB),
         ),
-        const Text(
-          "Không hỏi lại trên thiết bị này",
-          style: TextStyle(fontSize: 16, color: Colors.black54),
+        // Bọc Text trong GestureDetector để khi nhấn cũng ẩn bàn phím
+        GestureDetector(
+          onTap: () {
+            _hideKeypad();
+            controller.toggleRememberDevice(!controller.rememberDevice.value);
+          },
+          child: const Text(
+            "Không hỏi lại trên thiết bị này",
+            style: TextStyle(fontSize: 16, color: Colors.black54),
+          ),
         ),
       ],
     ));
   }
 
   Widget _buildMainActionButton(
-    BuildContext context,
-    TwoFactorController controller,
-  ) {
+      BuildContext context,
+      TwoFactorController controller,
+      ) {
     return Obx(
-      () => SizedBox(
+          () => SizedBox(
         width: double.infinity,
         height: 50,
         child: ElevatedButton(
           onPressed: controller.isVerifying.value
               ? null
-              : () => controller.verifyAndLogin(context),
+              : () {
+            _hideKeypad(); // Ẩn bàn phím khi nhấn nút
+            controller.verifyAndLogin(context);
+          },
           style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFF1ABC9C), // Màu xanh ngọc
+            backgroundColor: const Color(0xFF27AE60),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(8),
             ),
             elevation: 0,
-            disabledBackgroundColor: const Color(0xFF9FDCCB),
+            disabledBackgroundColor: const Color(0xFF27AE60),
           ),
           child: controller.isVerifying.value
               ? const SizedBox(
-                  width: 22,
-                  height: 22,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 3,
-                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                  ),
-                )
+            width: 22,
+            height: 22,
+            child: CircularProgressIndicator(
+              strokeWidth: 3,
+              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+            ),
+          )
               : const Text(
-                  "Vào ứng dụng",
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                ),
-        ),
-      ),
-    );
-  }
-
-  // --- Widget Bàn phím tùy chỉnh (Matching iOS Style) ---
-  Widget _buildKey(String label, {String? subLabel, IconData? icon, VoidCallback? onTap}) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(10),
-      child: Container(
-        height: 50,
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: Colors.grey.shade300, width: 0.5),
-        ),
-        alignment: Alignment.center,
-        child: icon != null
-            ? Icon(icon, size: 28, color: Colors.black87)
-            : Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              label,
-              style: const TextStyle(
-                  fontSize: 28, fontWeight: FontWeight.normal, color: Colors.black87),
-            ),
-            if (subLabel != null)
-              Text(
-                subLabel,
-                style: TextStyle(fontSize: 10, color: Colors.grey.shade600),
-              ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildCustomKeypad(TwoFactorController controller) {
-    // Layout bàn phím số
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
-      decoration: BoxDecoration(
-        color: Colors.grey.shade100,
-        border: Border(top: BorderSide(color: Colors.grey.shade300)),
-      ),
-      child: Column(
-        children: [
-          // Hàng 1, 2, 3, 4
-          ...[
-            ['1', '2', '3'],
-            ['4', '5', '6'],
-            ['7', '8', '9'],
-          ].map((row) => Padding(
-            padding: const EdgeInsets.symmetric(vertical: 8.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: row.map((key) => Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                  child: _buildKey(
-                    key,
-                    subLabel: {
-                      '2': 'ABC',
-                      '3': 'DEF',
-                      '5': 'JKL',
-                      '6': 'MNO',
-                      '8': 'TUV',
-                      '9': 'WXYZ',
-                      '4': 'GHI',
-                      '7': 'PQRS',
-                    }[key],
-                    onTap: () => controller.appendCode(key),
-                  ),
-                ),
-              )).toList(),
-            ),
-          )).toList(),
-
-          // Hàng cuối (0 và Xóa)
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 8.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                const Spacer(), // Ô trống
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                    child: _buildKey('0', onTap: () => controller.appendCode('0')),
-                  ),
-                ),
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                    child: _buildKey('', icon: CupertinoIcons.delete_left_fill, onTap: controller.deleteLastDigit),
-                  ),
-                ),
-              ],
+            "Xác nhận",
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
             ),
           ),
-        ],
+        ),
       ),
     );
   }
