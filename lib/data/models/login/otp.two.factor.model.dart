@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 class UserContext {
   final String userId;
   final String userName;
@@ -8,11 +7,11 @@ class UserContext {
   // ... thêm các trường khác nếu cần
 
   UserContext.fromJson(Map<String, dynamic> json)
-      : userId = json['UserId'] ?? '',
-        userName = json['UserName'] ?? '',
-        sessionId = json['SessionId'] ?? '',
-        fullName = json['FullName'] ?? '',
-        avatar = json['Avatar'] ?? '';
+    : userId = json['UserId'] ?? '',
+      userName = json['UserName'] ?? '',
+      sessionId = json['SessionId'] ?? '',
+      fullName = json['FullName'] ?? '',
+      avatar = json['Avatar'] ?? '';
 }
 
 class LoginData {
@@ -21,9 +20,9 @@ class LoginData {
   final UserContext context;
 
   LoginData.fromJson(Map<String, dynamic> json)
-      : token = json['Token'] ?? '',
-        refreshToken = json['RefreshToken'] ?? '',
-        context = UserContext.fromJson(json['Context'] ?? {});
+    : token = json['Token'] ?? '',
+      refreshToken = json['RefreshToken'] ?? '',
+      context = UserContext.fromJson(json['Context'] ?? {});
 }
 
 class LoginResponse {
@@ -33,8 +32,8 @@ class LoginResponse {
   final LoginData? data;
 
   LoginResponse.fromJson(Map<String, dynamic> json)
-      : code = json['Code'] ?? 0,
-        message = json['Message'] ?? 'Lỗi không xác định',
-        status = json['Status'] ?? false,
-        data = json['Data'] != null ? LoginData.fromJson(json['Data']) : null;
+    : code = json['Code'] ?? 0,
+      message = json['Message'] ?? 'Lỗi không xác định',
+      status = json['Status'] ?? false,
+      data = json['Data'] != null ? LoginData.fromJson(json['Data']) : null;
 }

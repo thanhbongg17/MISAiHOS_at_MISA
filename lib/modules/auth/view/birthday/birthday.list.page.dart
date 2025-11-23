@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import '../../../../data/models/user/user.model.dart'; // Import User model
 
 class BirthdayListPage extends StatelessWidget {

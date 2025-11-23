@@ -276,15 +276,36 @@ class LoginController extends GetxController {
     isLoading.value = false;
     isLoggedIn.value = true;
     userEmail.value = response.data!.context?.email ?? '';
+    
+    // Lưu token - QUAN TRỌNG: Token phải được lưu trước khi navigate
     accessToken.value = response.data!.token;
     userContext.value = response.data!.context;
 
-    print('[LoginController] login successful, navigating to /maincontent');
+    // Log để xác nhận token đã được lưu
+    print('[LoginController] ✅ Token saved: ${accessToken.value.isNotEmpty ? "YES (${accessToken.value.length} chars)" : "NO (empty)"}');
+    print('[LoginController] ✅ SessionId: ${userContext.value?.sessionId ?? "null"}');
+    print('[LoginController] ✅ TenantId: ${userContext.value?.tenantId ?? "null"}');
+    print('[LoginController] ✅ UserEmail: ${userEmail.value}');
+    
+    // Đảm bảo token đã được set trước khi navigate
+    if (accessToken.value.isEmpty) {
+      print('[LoginController] ❌ ERROR: Token is empty after login!');
+      Get.snackbar(
+        'Lỗi',
+        'Không nhận được token đăng nhập.',
+        snackPosition: SnackPosition.BOTTOM,
+      );
+      return;
+    }
+
+    print('[LoginController] login successful, navigating to /loading');
     Get.snackbar(
       'Đăng nhập',
       'Đăng nhập thành công',
       snackPosition: SnackPosition.BOTTOM,
     );
-    Get.offAllNamed('/loading');
+    
+    // Navigate sau khi đảm bảo token đã được set
+    Get.offNamed('/loading');
   }
 }

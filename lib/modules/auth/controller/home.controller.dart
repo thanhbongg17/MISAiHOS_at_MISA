@@ -2,7 +2,6 @@
 
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
-import '../../../data/models/home/home.model.dart';
 import '../../../data/models/user/user.model.dart';
 import '../view/birthday/birthday.list.page.dart';
 import '../view/home/home.page.view.dart';
@@ -11,6 +10,8 @@ import '../../home/pages/contacts.page.dart';
 import '../../home/pages/chat.page.dart';
 import '../../home/pages/more.page.dart';
 import '../../auth/view/dashboard/dashboard.page.dart';
+import '../../../data/models/newsfeed/newsfeed.model.dart';
+import '../../../data/services/newsfeed/newsfeed.service.dart';
 
 
 
@@ -44,7 +45,7 @@ class HomeController extends GetxController {
     // Debug lifecycle
     // ignore: avoid_print
     print('[HomeController] onInit called');
-    fetchFeedPosts();
+    // fetchFeedPosts();
     fetchUsersAndBirthdays();
   }
 
@@ -78,9 +79,9 @@ class HomeController extends GetxController {
   void fetchUsersAndBirthdays() async {
     // 2.1. Giả lập Dữ liệu từ API/DB
     final mockAllUsers = [
-      User(name: 'Hà Văn Tùng', initials: 'HT', color: Colors.green, dateOfBirth: DateTime(1990, 11, 20)),
+      User(name: 'Hà Văn Tùng', initials: 'HT', color: Colors.green, dateOfBirth: DateTime(1990, 11, 23)),
       User(name: 'Lê Thu Linh', initials: 'LL', color: Colors.purple, dateOfBirth: DateTime(1995, 11, 18)), // Không sinh nhật
-      User(name: 'Nguyễn Văn Nam', initials: 'NN', color: Colors.blue, dateOfBirth: DateTime(1985, 11, 19)),
+      User(name: 'Nguyễn Văn Nam', initials: 'NN', color: Colors.blue, dateOfBirth: DateTime(1985, 11, 23)),
       User(name: 'Phạm Thị Mai', initials: 'PM', color: Colors.red, dateOfBirth: DateTime(1992, 11, 19)), // Người sinh nhật thứ 3
       User(name: 'Đào Duy Anh', initials: 'ĐA', color: Colors.brown, dateOfBirth: DateTime(1993, 7, 10)), // Không sinh nhật
       User(name: 'Phạm Tiến Thành', initials: 'ĐA', color: Colors.brown, dateOfBirth: DateTime(1993, 11, 21)),
@@ -116,73 +117,73 @@ class HomeController extends GetxController {
     }
   }
   // 3. Dữ liệu bài đăng
-  final RxList<FeedPost> feedPosts = <FeedPost>[].obs;
-  var isLoading = true.obs;
-
-  // --- GETTER ĐÃ SỬA LỖI ---
-  // Tổng số trang (4 items/trang), sử dụng ceil() để làm tròn lên.
-  int get totalPages {
-    if (functionItems.isEmpty) return 1; // Tránh chia cho 0 nếu danh sách rỗng
-    return (functionItems.length / 4).ceil();
-  }
-  // -------------------------
-
-
-
-  // --- Hàm quản lý PageView ---
-  void updatePage(int index) {
-    currentPage.value = index;
-  }
-
-  // --- Hàm giả lập gọi API cho Feed Posts ---
-  void fetchFeedPosts() async {
-    isLoading.value = true;
-
-    await Future.delayed(const Duration(seconds: 1));
-
-    final mockData = [
-      FeedPost(
-        userName: 'Nguyễn Văn Tùng',
-        timeAgo: '3 ngày trước • 🌐',
-        content: 'hi',
-        attachmentName: 'Screenshot_...SA iHOS.jpg',
-        initialLikes: 1,
-        isLiked: true,
-      ),
-      FeedPost(
-        userName: 'Trần Thị Hà',
-        timeAgo: '1 giờ trước • 🔒',
-        content: 'Báo cáo tháng đã hoàn thành.',
-        attachmentName: 'Report_T11.xlsx',
-        initialLikes: 5,
-        isLiked: false,
-      ),
-    ];
-
-    feedPosts.value = mockData;
-    isLoading.value = false;
-    // Debug: report feed size
-    // ignore: avoid_print
-    print('[HomeController] fetchFeedPosts loaded ${feedPosts.length} posts');
-  }
-
-  // --- Hàm xử lý Logic Business/Action (Like) ---
-  void toggleLike(int index) {
-    if (index < 0 || index >= feedPosts.length) return;
-
-    var post = feedPosts[index];
-
-    final newPost = FeedPost(
-      userName: post.userName,
-      timeAgo: post.timeAgo,
-      content: post.content,
-      attachmentName: post.attachmentName,
-      initialLikes: post.isLiked ? post.initialLikes - 1 : post.initialLikes + 1,
-      isLiked: !post.isLiked,
-    );
-
-    feedPosts[index] = newPost;
-  }
+  // final RxList<FeedPost> feedPosts = <FeedPost>[].obs;
+  // var isLoading = true.obs;
+  //
+  // // --- GETTER ĐÃ SỬA LỖI ---
+  // // Tổng số trang (4 items/trang), sử dụng ceil() để làm tròn lên.
+  // int get totalPages {
+  //   if (functionItems.isEmpty) return 1; // Tránh chia cho 0 nếu danh sách rỗng
+  //   return (functionItems.length / 4).ceil();
+  // }
+  // // -------------------------
+  //
+  //
+  //
+  // // --- Hàm quản lý PageView ---
+  // void updatePage(int index) {
+  //   currentPage.value = index;
+  // }
+  //
+  // // --- Hàm giả lập gọi API cho Feed Posts ---
+  // void fetchFeedPosts() async {
+  //   isLoading.value = true;
+  //
+  //   await Future.delayed(const Duration(seconds: 1));
+  //
+  //   // final mockData = [
+  //   //   FeedPost(
+  //   //     userName: 'Nguyễn Văn Tùng',
+  //   //     timeAgo: '3 ngày trước • 🌐',
+  //   //     content: 'hi',
+  //   //     attachmentName: 'Screenshot_...SA iHOS.jpg',
+  //   //     initialLikes: 1,
+  //   //     isLiked: true,
+  //   //   ),
+  //   //   FeedPost(
+  //   //     userName: 'Trần Thị Hà',
+  //   //     timeAgo: '1 giờ trước • 🔒',
+  //   //     content: 'Báo cáo tháng đã hoàn thành.',
+  //   //     attachmentName: 'Report_T11.xlsx',
+  //   //     initialLikes: 5,
+  //   //     isLiked: false,
+  //   //   ),
+  //   // ];
+  //
+  //   feedPosts.value = mockData;
+  //   isLoading.value = false;
+  //   // Debug: report feed size
+  //   // ignore: avoid_print
+  //   print('[HomeController] fetchFeedPosts loaded ${feedPosts.length} posts');
+  // }
+  //
+  // // --- Hàm xử lý Logic Business/Action (Like) ---
+  // void toggleLike(int index) {
+  //   if (index < 0 || index >= feedPosts.length) return;
+  //
+  //   var post = feedPosts[index];
+  //
+  //   final newPost = FeedPost(
+  //     userName: post.userName,
+  //     timeAgo: post.timeAgo,
+  //     content: post.content,
+  //     attachmentName: post.attachmentName,
+  //     initialLikes: post.isLiked ? post.initialLikes - 1 : post.initialLikes + 1,
+  //     isLiked: !post.isLiked,
+  //   );
+  //
+  //   feedPosts[index] = newPost;
+  // }
 }
 // Note: placeholder pages were removed to avoid duplicate symbol
 // definitions with `lib/modules/home/home.page.dart`.
