@@ -12,6 +12,7 @@ class LoadingPage extends StatelessWidget {
     });
 
     return Scaffold(
+      backgroundColor: Colors.white,
       body: SafeArea(
         child: Stack(
           children: [

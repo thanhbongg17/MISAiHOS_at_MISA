@@ -6,6 +6,7 @@ import '../../modules/auth/view/login/login.page.dart';
 import '../../modules/home/loading.page.dart';
 import '../../modules/auth/view/dashboard/dashboard.page.dart';
 import '../../modules/auth/view/home/home.page.view.dart';
+import '../../modules/home/pages/contacts.page.dart';
 
 class UserRoutes {
   // Change the type from Map<String, WidgetBuilder> to List<GetPage>
@@ -30,5 +31,8 @@ class UserRoutes {
       }),
     ),
     GetPage(name: "/report", page: () => const DashboardPage()),
+    GetPage(name: "/contact", page: () => const ContactsPage()),
+
+
   ];
 }
