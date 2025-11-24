@@ -15,14 +15,16 @@ class DashboardPage extends StatelessWidget {
     final controller = Get.put(DashboardController());
 
     return Scaffold(
+      //backgroundColor: Colors.white,
       appBar: AppBar(
+        backgroundColor: Colors.cyan[50],
         automaticallyImplyLeading: false, // Bỏ nút back
         title: const Text(
           'Tổng quan',
           textAlign: TextAlign.left,
           style: TextStyle(
             fontWeight: FontWeight.bold,
-            fontSize: 24,
+            fontSize: 22,
           ),
         ),
         toolbarHeight: 80,
@@ -35,46 +37,68 @@ class DashboardPage extends StatelessWidget {
                 color: Colors.red.shade400,
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.star, color: Colors.white, size: 20),
+              child: const Icon(Icons.star, color: Colors.white, size: 14),
             ),
           ),
         ],
       ),
-      body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // --- Phần Menu Chức năng (Tài chính, Tài sản, Nhân sự) ---
-            _buildSummaryMenu(controller),
+      body: Container(
+        color: Colors.cyan[50],
+        //color: Colors.green,
+        child: Container(
+          width: double.infinity, // Mở rộng full chiều ngang
+          height: double.infinity, // Mở rộng full chiều cao (để che màu xanh ở dưới chân)
+          decoration: BoxDecoration(
+            color: Colors.white, // Nền nội dung màu trắng
+            borderRadius: BorderRadius.vertical(
+              top: Radius.circular(30), // Bo góc trên
+            ),
+          ),
+          // ⚠QUAN TRỌNG: Cắt nội dung khi cuộn để không bị chờm ra khỏi góc bo
+          clipBehavior: Clip.hardEdge,
+          child: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 20), // Thêm chút khoảng cách ở trên cùng cho đẹp
 
-            const SizedBox(height: 20),
+                // --- Phần Menu Chức năng (Tài chính, Tài sản, Nhân sự) ---
+                _buildSummaryMenu(controller),
 
-            // --- Phần 1: TÌNH HÌNH THỰC HIỆN KẾ HOẠCH NGÂN SÁCH ---
-            Obx(() => _buildReportCard(
-              controller: controller,
-              report: controller.budgetExecutionReport.value,
-              isLoading: controller.isLoading.value,
-            )),
+                const SizedBox(height: 20),
 
-            const SizedBox(height: 20),
+                // --- Phần 1: TÌNH HÌNH THỰC HIỆN KẾ HOẠCH NGÂN SÁCH ---
+                Obx(() => _buildReportCard(
+                  controller: controller,
+                  report: controller.budgetExecutionReport.value,
+                  isLoading: controller.isLoading.value,
+                )),
 
-            // --- Phần 2: TÌNH HÌNH SỬ DỤNG NGÂN SÁCH ---
-            Obx(() => _buildReportCard(
-              controller: controller,
-              report: controller.budgetUsageReport.value,
-              isLoading: controller.isLoading.value,
-            )),
-            Obx(() => _buildReportCard(
-              controller: controller,
-              report: controller.budgetUsageReport.value,
-              isLoading: controller.isLoading.value,
-            )),
-            Obx(() => _buildReportCard(
-              controller: controller,
-              report: controller.budgetUsageReport.value,
-              isLoading: controller.isLoading.value,
-            )),
-          ],
+                const SizedBox(height: 20),
+
+                // --- Phần 2: TÌNH HÌNH SỬ DỤNG NGÂN SÁCH ---
+                Obx(() => _buildReportCard(
+                  controller: controller,
+                  report: controller.budgetUsageReport.value,
+                  isLoading: controller.isLoading.value,
+                )),
+
+                Obx(() => _buildReportCard(
+                  controller: controller,
+                  report: controller.budgetUsageReport.value,
+                  isLoading: controller.isLoading.value,
+                )),
+
+                Obx(() => _buildReportCard(
+                  controller: controller,
+                  report: controller.budgetUsageReport.value,
+                  isLoading: controller.isLoading.value,
+                )),
+
+                const SizedBox(height: 20), // Khoảng đệm dưới cùng
+              ],
+            ),
+          ),
         ),
       ),
       // Giả lập Bottom Navigation Bar (Nếu cần thiết)

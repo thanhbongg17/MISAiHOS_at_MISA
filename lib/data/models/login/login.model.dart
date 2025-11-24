@@ -5,6 +5,10 @@ class LoginResponse {
   final LoginData? data;
   final bool status;
 
+  //sửa newfeed
+  //final String? budgetCode;
+
+
   LoginResponse({
     required this.code,
     required this.message,
@@ -40,18 +44,37 @@ class LoginData {
     required this.context,
   });
 
+  // factory LoginData.fromJson(Map<String, dynamic> json) {
+  //   return LoginData(
+  //     token: json['Token'] as String? ?? '',
+  //     refreshToken: json['RefreshToken'] as String? ?? '',
+  //     tokenTimeout: json['TokenTimeout'] is int
+  //         ? json['TokenTimeout'] as int
+  //         : int.tryParse('${json['TokenTimeout']}') ?? 0,
+  //     context: json['Context'] != null
+  //         ? UserContext.fromJson(json['Context'] as Map<String, dynamic>)
+  //         : null,
+  //   );
+  // }
   factory LoginData.fromJson(Map<String, dynamic> json) {
+    // Token API trả về dạng "Bearer eyJ..."
+    String rawToken = json['Token'] ?? '';
+
+    // ❗ Loại bỏ chữ "Bearer "
+    if (rawToken.startsWith("Bearer ")) {
+      rawToken = rawToken.replaceFirst("Bearer ", "");
+    }
+
     return LoginData(
-      token: json['Token'] as String? ?? '',
+      token: rawToken,
       refreshToken: json['RefreshToken'] as String? ?? '',
-      tokenTimeout: json['TokenTimeout'] is int
-          ? json['TokenTimeout'] as int
-          : int.tryParse('${json['TokenTimeout']}') ?? 0,
+      tokenTimeout: json['TokenTimeout'] as int? ?? 0,
       context: json['Context'] != null
-          ? UserContext.fromJson(json['Context'] as Map<String, dynamic>)
+          ? UserContext.fromJson(json['Context'])
           : null,
     );
   }
+
 }
 
 // --- User Context Model (Thông tin người dùng) ---

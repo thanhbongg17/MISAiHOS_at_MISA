@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:misa_ihos_thanh/modules/auth/controller/newsfeed.controller.dart';
 import '../../controller/home.controller.dart';
-import '../../../../data/models/home/home.model.dart';
 import '../../../../data/models/user/user.model.dart';
+import '../../../../data/models/newsfeed/newsfeed.model.dart';
+import '../../controller/login.controller.dart';
 
 class HomePageView extends StatelessWidget {
   const HomePageView({super.key});
@@ -11,60 +13,266 @@ class HomePageView extends StatelessWidget {
   Widget build(BuildContext context) {
     // Khởi tạo Controller và đưa vào bộ nhớ
     final HomeController controller = Get.put(HomeController());
+    // Sử dụng Get.find nếu đã tồn tại, nếu không thì tạo mới
+    final NewsFeedController newsfeedcontroller =
+        Get.isRegistered<NewsFeedController>()
+        ? Get.find<NewsFeedController>()
+        : Get.put(NewsFeedController());
+
+    // KHÔNG gọi API ở đây nữa - để onInit của NewsFeedController tự động load
+    // Tránh gọi API nhiều lần đồng thời
+    print(
+      "[HomePageView] build called - feedPosts.length: ${newsfeedcontroller.feedPosts.length}",
+    );
+
+    // Debug status và đảm bảo load dữ liệu khi build
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      // Đợi một chút để đảm bảo controller đã được khởi tạo hoàn toàn
+      Future.delayed(const Duration(milliseconds: 800), () {
+        newsfeedcontroller.debugStatus();
+
+        // QUAN TRỌNG: Đảm bảo dữ liệu được load
+        // Sử dụng ensureDataLoaded() thay vì refreshFeed() để tránh conflict
+        if (newsfeedcontroller.feedPosts.isEmpty &&
+            !newsfeedcontroller.isLoading.value &&
+            !newsfeedcontroller.isRefreshing.value) {
+          print("[HomePageView] ⚠️ No posts found, ensuring data is loaded...");
+          newsfeedcontroller.ensureDataLoaded();
+        }
+      });
+    });
 
     return Scaffold(
+      backgroundColor: Colors.cyan[50],
+      //backgroundColor: Colors.red,
       body: SafeArea(
-        child: Column(
-          children: [
-            // --- Phần 1: App Bar (Bảng tin và Icons) ---
-            _buildAppBar(controller),
-
-            // --- Phần 2: Menu Chức năng (Lấy từ Controller) ---
-            _buildFunctionMenu(controller), // Truyền controller vào đây
-            // --- Phần 3: Danh sách người dùng Tùng, Linh, Tất cả (Static) ---
-            _buildUserList(controller),
-
-            // --- Phần 4: Banner Gửi lời chúc (Static) ---
-            _buildBirthdayBanner(controller),
-
-            // --- Divider (Tách biệt banner và feed) ---
-            const Divider(height: 1, color: Colors.grey),
-
-            // --- Phần 5: Feed Post (Sử dụng Obx cho danh sách) ---
-            Expanded(
-              child: Obx(() {
-                if (controller.isLoading.value) {
-                  return const Center(child: CircularProgressIndicator());
-                }
-                // Nếu không có bài post nào
-                if (controller.feedPosts.isEmpty) {
-                  return const Center(child: Text("Không có bài đăng nào."));
-                }
-                // Hiển thị danh sách bài post
-                return ListView.builder(
-                  padding: EdgeInsets.zero,
-                  itemCount: controller.feedPosts.length,
-                  itemBuilder: (context, index) {
-                    final post = controller.feedPosts[index];
-                    // Truyền index để Controller biết phải cập nhật Post nào khi click Like
-                    return _buildFeedPost(controller, post, index);
-                  },
-                );
-              }),
+        bottom: false,// tránh ăn màu xuống bên đưới
+        child: Container(
+          //color: Colors.red,
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                Colors.cyan[50]!,      // Phần 1
+                Colors.cyan[100]!,               // Phần 2 (Ở giữa)
+                Colors.white,  // Phần 3
+              ],
+              // Định vị 3 điểm chốt để chia đều màu
+              stops: const [0.1,0.2,0.38],
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
             ),
-          ],
-        ),
-      ),
+          ),
+          child: Column(
+            children: [
+              _buildAppBar(controller),
+              Expanded(
+                child: Obx(() {
+                  // Đảm bảo reactive với cả isLoading và feedPosts
+                  // QUAN TRỌNG: Đọc tất cả observables để trigger reactive update
+                  final isLoading = newsfeedcontroller.isLoading.value;
+                  final isRefreshing = newsfeedcontroller.isRefreshing.value;
+                  // QUAN TRỌNG: Đọc feedPosts trực tiếp để trigger reactive update
+                  // GetX sẽ tự động track changes khi đọc .length hoặc truy cập list
+                  final feedPostsList = newsfeedcontroller.feedPosts;
+                  final postsLength = feedPostsList.length;
+                  // Đọc isEmpty để trigger update khi list thay đổi
+                  final isEmpty = feedPostsList.isEmpty;
 
-      // --- Phần 6: Bottom Navigation Bar ---
+                  print(
+                    "[HomePageView] Obx rebuild - isLoading: $isLoading, isRefreshing: $isRefreshing, posts.length: $postsLength, isEmpty: $isEmpty",
+                  );
+
+                  // Header cuộn: menu + user list + birthday banner + divider
+                  final header = Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // --- Phần 2: Menu Chức năng (Lấy từ Controller) ---
+                      _buildFunctionMenu(controller, newsfeedcontroller),
+                      // --- Phần 3: Danh sách người dùng Tùng, Linh, Tất cả (Static) ---
+                      _buildUserList(controller),
+                      // --- Phần 4: Banner Gửi lời chúc (Static) ---
+                      _buildBirthdayBanner(controller),
+                      const Divider(
+                          height: 10,
+                          thickness :10.0,
+                          color: Color(0xFFEEEEEE)),
+
+                    ],
+                  );
+                  // --- Phần 5: Feed Post (Sử dụng Obx cho danh sách) ---
+                  // QUAN TRỌNG: Kiểm tra isLoading TRƯỚC, sau đó mới kiểm tra posts
+                  if (isLoading && !isRefreshing) {
+                    print(
+                      "[HomePageView] Showing loading indicator - isLoading: $isLoading",
+                    );
+                    return CustomScrollView(
+                      slivers: [
+                        SliverToBoxAdapter(child: header),
+                        const SliverFillRemaining(
+                          hasScrollBody: false,
+                          child: Center(child: CircularProgressIndicator()),
+                        ),
+                      ],
+                    );
+                  }
+
+                  // Nếu không có bài post nào và đã load xong (KHÔNG đang loading và KHÔNG đang refreshing)
+                  // QUAN TRỌNG: Kiểm tra cả isEmpty và postsLength để đảm bảo chính xác
+                  if (isEmpty &&
+                      postsLength == 0 &&
+                      !isLoading &&
+                      !isRefreshing) {
+                    print(
+                      "[HomePageView] Showing empty state - postsLength: $postsLength, isEmpty: $isEmpty, isLoading: $isLoading, isRefreshing: $isRefreshing",
+                    );
+                    return RefreshIndicator(
+                      onRefresh: () => newsfeedcontroller.refreshFeed(),
+                      child: CustomScrollView(
+                        slivers: [
+                          SliverToBoxAdapter(child: header),
+                          SliverFillRemaining(
+                            hasScrollBody: false,
+                            child: Center(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    Icons.inbox,
+                                    size: 64,
+                                    color: Colors.grey[400],
+                                  ),
+                                  const SizedBox(height: 16),
+                                  Text(
+                                    'Chưa có bài viết nào',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      color: Colors.grey[600],
+                                    ),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    'Hãy thử kéo xuống để làm mới',
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      color: Colors.grey[500],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  }
+                  // Hiển thị danh sách bài post với pull-to-refresh
+                  // ✅ Có bài: header + feed cùng CUỘN, AppBar đứng im
+                  print(
+                    "[HomePageView] ✅ Showing posts list - postsLength: $postsLength",
+                  );
+
+                  // Đảm bảo postsLength > 0 trước khi render
+                  // QUAN TRỌNG: Kiểm tra cả isEmpty và postsLength
+                  if (isEmpty || postsLength == 0) {
+                    print(
+                      "[HomePageView] ⚠️ WARNING: postsLength is 0 or isEmpty is true but reached render section!",
+                    );
+                    // Fallback: hiển thị empty state
+                    return RefreshIndicator(
+                      onRefresh: () {
+                        print("[HomePageView] Pull-to-refresh from empty state");
+                        return newsfeedcontroller.refreshFeed();
+                      },
+                      child: CustomScrollView(
+                        slivers: [
+                          SliverToBoxAdapter(child: header),
+                          SliverFillRemaining(
+                            hasScrollBody: false,
+                            child: Center(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    Icons.inbox,
+                                    size: 64,
+                                    color: Colors.grey[400],
+                                  ),
+                                  const SizedBox(height: 16),
+                                  Text(
+                                    'Chưa có bài viết nào',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      color: Colors.grey[600],
+                                    ),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    'Hãy thử kéo xuống để làm mới',
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      color: Colors.grey[500],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  }
+
+                  return RefreshIndicator(
+                    onRefresh: () {
+                      print("[HomePageView] Pull-to-refresh triggered");
+                      return newsfeedcontroller.refreshFeed();
+                    },
+                    child: CustomScrollView(
+                      slivers: [
+                        SliverToBoxAdapter(child: header),
+                        SliverList(
+                          delegate: SliverChildBuilderDelegate(
+                                (context, index) {
+                              // Đảm bảo index hợp lệ
+                              if (index >= postsLength) {
+                                print(
+                                  "[HomePageView] ERROR: index $index >= postsLength $postsLength",
+                                );
+                                return const SizedBox.shrink();
+                              }
+                              // Đọc trực tiếp từ list đã được reactive
+                              final post = feedPostsList[index];
+                              return _buildFeedPost(
+                                controller,
+                                newsfeedcontroller,
+                                post,
+                                index,
+                              );
+                            },
+                            childCount:
+                            postsLength, // Sử dụng postsLength thay vì posts.length
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }),
+              ),
+            ],
+          ),
+        )
+
+      ),
     );
   }
 
   // --- Widget Functions ---
 
   Widget _buildAppBar(HomeController controller) {
-    return Padding(
+    return Container(
       padding: const EdgeInsets.all(16.0),
+      //color: Colors.cyan[50],
+      color:Colors.transparent,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -87,7 +295,7 @@ class HomePageView extends StatelessWidget {
                   color: Colors.red.shade400,
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(Icons.star, color: Colors.white, size: 15),
+                child: const Icon(Icons.star, color: Colors.white, size: 14),
               ),
               const SizedBox(width: 15),
               // Icon Chat
@@ -131,7 +339,10 @@ class HomePageView extends StatelessWidget {
     );
   }
 
-  Widget _buildFunctionMenu(HomeController controller) {
+  Widget _buildFunctionMenu(
+    HomeController controller,
+    NewsFeedController newsfeedcontroller,
+  ) {
     // Khởi tạo PageController ngoài Obx để tránh tạo lại
     final PageController pageController = PageController();
 
@@ -153,9 +364,9 @@ class HomePageView extends StatelessWidget {
               // PageView sẽ chiếm toàn bộ chiều rộng có sẵn
               child: PageView.builder(
                 controller: pageController,
-                itemCount: controller.totalPages, // Số lượng trang
+                itemCount: newsfeedcontroller.totalPages, // Số lượng trang
                 onPageChanged:
-                    controller.updatePage, // Cập nhật trạng thái trang
+                    newsfeedcontroller.updatePage, // Cập nhật trạng thái trang
                 itemBuilder: (context, pageIndex) {
                   // Logic tính toán các mục cho trang hiện tại
                   final itemsPerPage = 4;
@@ -188,7 +399,7 @@ class HomePageView extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: List.generate(
-                controller.totalPages,
+                newsfeedcontroller.totalPages,
                 (index) => Obx(
                   () => _pageDot(
                     controller.currentPage.value == index,
@@ -212,7 +423,21 @@ class HomePageView extends StatelessWidget {
   }
 
   // --- HÀM SỬA ĐỔI ĐỂ SỬ DỤNG DỮ LIỆU ĐỘNG VÀ LOGIC LIKE THEO INDEX ---
-  Widget _buildFeedPost(HomeController controller, FeedPost post, int index) {
+  Widget _buildFeedPost(
+    HomeController controller,
+    NewsFeedController newsfeedcontroller,
+    FeedPost post,
+    int index,
+  ) {
+    // --- LẤY ẢNH AN TOÀN ---
+    final imageFileName =
+    (post.listImageDetail != null && post.listImageDetail!.isNotEmpty)
+        ? post.listImageDetail!.first.fileName
+        : (post.images.isNotEmpty
+        ? post.images.first.replaceAll(".jpg", "")
+        .replaceAll(".png", "")
+        .replaceAll(".jpeg", "")
+        : null);
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: Column(
@@ -232,14 +457,14 @@ class HomePageView extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    post.userName,
+                    post.authorName,
                     style: const TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 15,
                     ),
                   ),
                   Text(
-                    post.timeAgo,
+                    post.publishDate.toString(),
                     style: const TextStyle(fontSize: 12, color: Colors.black54),
                   ),
                 ],
@@ -250,78 +475,69 @@ class HomePageView extends StatelessWidget {
           ),
           const SizedBox(height: 10),
           // Nội dung Post
-          Text(post.content, style: const TextStyle(fontSize: 14)),
+          Text(
+            (post.contentPlainText?.trim().isNotEmpty == true)
+                ? post.contentPlainText ?? ""
+                : (post.summary ?? ""),
+            style: const TextStyle(fontSize: 14),
+          ),
+
           const SizedBox(height: 10),
 
-          // Tệp đính kèm
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-            decoration: BoxDecoration(
-              border: Border.all(color: Colors.grey.shade300),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: const Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(Icons.attachment, size: 18, color: Colors.blue),
-                SizedBox(width: 5),
-                Text(
-                  'Tệp đính kèm (1)',
-                  style: TextStyle(fontSize: 13, color: Colors.blue),
+          if (imageFileName != null)
+            Padding(
+              padding: const EdgeInsets.only(top: 10),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: Image.network(
+                  "https://ihosapp.misa.vn/system/api/g1/file/Files/image/$imageFileName",
+                  headers: {
+                    "Authorization":
+                    "Bearer ${Get.find<LoginController>().accessToken.value}",
+                    "x-sessionid": Get.find<LoginController>().userContext.value?.sessionId ?? "",
+                    "Cookie":
+                    "x-ihos-tid=${Get.find<LoginController>().userContext.value?.tenantId}; "
+                        "x-ihos-sid=${Get.find<LoginController>().userContext.value?.sessionId}",
+                  },
+                  height: 180,
+                  width: double.infinity,
+                  fit: BoxFit.cover,
                 ),
-              ],
+              ),
             ),
-          ),
-          const SizedBox(height: 5),
-          Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: Colors.grey.shade100,
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: Colors.grey.shade300),
-            ),
-            child: Text(
-              post.attachmentName, // Sử dụng dữ liệu từ Model
-              style: const TextStyle(fontSize: 14),
-            ),
-          ),
+
           const SizedBox(height: 15),
 
           // Thao tác (Like, Comment, Chat)
+          // --- ACTIONS LIKE | COMMENT | CHAT ---
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              // Thích (Sử dụng dữ liệu post.isLiked và gọi controller.toggleLike(index))
               GestureDetector(
-                onTap: () => controller.toggleLike(index),
+                onTap: () => newsfeedcontroller.toggleLike(index),
                 child: Row(
                   children: [
-                    Icon(
-                      post.isLiked ? Icons.thumb_up : Icons.thumb_up_outlined,
-                      color: post.isLiked ? Colors.blue : Colors.grey,
+                    const Icon(
+                      Icons.thumb_up_outlined,
                       size: 20,
+                      color: Colors.grey,
                     ),
                     const SizedBox(width: 5),
                     Text(
-                      'Thích ${post.initialLikes > 0 ? post.initialLikes : ''}',
-                      style: TextStyle(
-                        color: post.isLiked ? Colors.blue : Colors.grey,
-                        fontWeight: FontWeight.w600,
+                      'Thích (${post.postLikes?.length ?? 0})',
+                      style: const TextStyle(
                         fontSize: 13,
+                        color: Colors.grey,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ],
                 ),
               ),
 
-              _postActionItem('Bình luận', Icons.chat_bubble_outline),
-              _postActionItem('Chat', Icons.message_outlined),
+              _postActionItem("Bình luận", Icons.chat_bubble_outline),
+              _postActionItem("Chat", Icons.message_outlined),
             ],
-          ),
-          const SizedBox(height: 10),
-          const Text(
-            '4 người xem',
-            style: TextStyle(fontSize: 13, color: Colors.black54),
           ),
         ],
       ),
@@ -458,17 +674,11 @@ class HomePageView extends StatelessWidget {
   // Ví dụ: final MyController controller = Get.find();
 
   Widget _buildBirthdayBanner(HomeController controller) {
-    // Lấy Controller của  (ví dụ: MyController)
-    // Nếu  đang ở trong Controller, sẽ truy cập trực tiếp các biến
-    // Nếu  đang ở View (Widget), cần Get.find() hoặc truyền Controller vào.
-    // Giả định: final MyController controller = Get.find();
-    // KHÔNG CÓ CONTROLLER: Dùng dữ liệu giả lập để minh họa
-    // Giả sử, chúng ta truy cập Controller để lấy dữ liệu.
 
     // 1. Bọc bằng Obx để theo dõi sự thay đổi của todayPriorityBirthdays
     return Obx(() {
       // 2. Lấy dữ liệu người sinh nhật đầu tiên
-      final List<User> birthdays = controller.AlltodayPriorityBirthdays.value;
+      final List<User> birthdays = controller.AlltodayPriorityBirthdays;
 
       // 3. Kiểm tra: Nếu danh sách rỗng, ẩn toàn bộ khối bằng SizedBox.shrink()
       if (birthdays.isEmpty) {
@@ -483,7 +693,7 @@ class HomePageView extends StatelessWidget {
 
       // 4. Nếu có người sinh nhật, hiển thị khối Banner
       return Container(
-        height: 160,
+        height: 130,
         margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
