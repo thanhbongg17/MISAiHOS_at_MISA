@@ -536,7 +536,7 @@ class HomePageView extends StatelessWidget {
               ),
 
               _postActionItem("Bình luận", Icons.chat_bubble_outline),
-              _postActionItem("Chat", Icons.message_outlined),
+              // _postActionItem("Chat", Icons.message_outlined),
             ],
           ),
         ],

@@ -33,6 +33,7 @@ dependencies:
   get: ^4.6.5  # This line must have exactly 2 spaces before 'get'
   http: ^1.1.0
   url_launcher: ^6.1.10
+  shared_preferences: ^2.2.2
   # ... other dependencies ...
   cupertino_icons: ^1.0.8
 
