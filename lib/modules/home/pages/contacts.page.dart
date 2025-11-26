@@ -21,7 +21,9 @@ class ContactsPage extends StatelessWidget {
     Get.put(ContactController(contactService: service));
 
     // 3. Trả về View chính (Giao diện)
-    return const ContactView();
+    return Scaffold(
+      body: ContactView(),
+    );
   }
 }
 

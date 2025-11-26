@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../../models/contact/contact.model.dart';
+import '../../../../token/token.manager.dart';
 
 class ContactService {
   // Endpoint đúng (có /api)
@@ -9,11 +10,14 @@ class ContactService {
   Future<List<ContactUser>> fetchContactUsers({String? query}) async {
     // 1. Tạo URI (Không cần queryParams ở đây)
     final Uri uri = Uri.https('ihosapp.misa.vn', _endpoint);
+    String? token = await TokenManager.getToken();
 
     // 2. Token bạn đã cung cấp
     final Map<String, String> headers = {
       'Content-Type': 'application/json',
-      'Authorization': 'Bearer eyJhbGciOiJSUzI1NiIsImtpZCI6Imlob3NwaXRhbC1wbGF0Zm9ybS1rZXktMDEiLCJ0eXAiOiJKV1QifQ.eyJ1bmEiOiJpaG9zcWMxM0B5b3BtYWlsLmNvbSIsInVpZCI6IjZlNzQ0ZThlLWQ5Y2MtNGMxYS1hZWU3LTAzZTllOGRkOWQ1NSIsInNpZCI6IjllMDE2M2VlLTM2YTgtNGYyYS1hYTA0LWM5NjQzMzlmNjJmOCIsInRpZCI6ImU0OWU5ZDU1LWE3NmYtNDlhNi04YWM1LTNiMmFlNDNmYzQ4MyIsInRubiI6IkLhu4duaCB2aeG7h24gxJFhIGtob2EgdOG7iW5oIE1pc2EgMjAwMjAwMDguMTMiLCJiY28iOiIyMDAyMDAwOC4xMyIsInNjb3BlIjoibW9iaWxlX2dhdGV3YXk6YWNjZXNzIiwibmJmIjoxNzYzOTUzNTQ5LCJleHAiOjE3NjM5ODIzNDksImlhdCI6MTc2Mzk1MzU0OSwiaXNzIjoiTUlTQUpTQyJ9.bhvd4eCN3B9SHOnjkGJL2_Niln-iMA2365oES2vQ5eG4tbIoZ2vGv509rZg92k1VL3qZfA1LA9RXARlV3y5gkkwuW2OnzQ-PNWWTCtgVDwQCjXNRhN_x69oiN6xsyAEsjxlpIXMYE-PcohNSiv8Qhl1rwnQCAxa6rwl7dxQe6VY',
+      "Authorization": "Bearer $token",
+      //'Authorization': 'Bearer eyJhbGciOiJSUzI1NiIsImtpZCI6Imlob3NwaXRhbC1wbGF0Zm9ybS1rZXktMDEiLCJ0eXAiOiJKV1QifQ.eyJ1bmEiOiJpaG9zcWMxM0B5b3BtYWlsLmNvbSIsInVpZCI6IjZlNzQ0ZThlLWQ5Y2MtNGMxYS1hZWU3LTAzZTllOGRkOWQ1NSIsInNpZCI6IjY4Y2YwYjIyLWFiZmQtNGYxYS05ZjcxLTY5ODBmODQ1MDZiNyIsInRpZCI6ImU0OWU5ZDU1LWE3NmYtNDlhNi04YWM1LTNiMmFlNDNmYzQ4MyIsImJjbyI6IjIwMDIwMDA4LjEzIiwidG5uIjoiQuG7h25oIHZp4buHbiDEkWEga2hvYSB04buJbmggTWlzYSAyMDAyMDAwOC4xMyIsInNjb3BlIjoibW9iaWxlX2dhdGV3YXk6YWNjZXNzIiwibmJmIjoxNzY0MDM5Mjg0LCJleHAiOjE3NjQwNjgwODQsImlhdCI6MTc2NDAzOTI4NCwiaXNzIjoiTUlTQUpTQyJ9.F-zg2g-VHgb-jvRZilffvk-CbzHnJoK_ajBwU77FS0Re0O2KUixCE_E7NtIEEvSke0zZmO3p3CM_cfa0qrsmUEBYEfrO6AwG13jDHvfL8mnMlqgaM0DAPhV3BoZeT-k3iWpnwRY5ozOZu8kQscHlYf_y4yjy7iTS_mwZYy2yWB4',
+
     };
 
     // 3. KHAI BÁO bodyRequest (Đây là phần bạn bị thiếu)
