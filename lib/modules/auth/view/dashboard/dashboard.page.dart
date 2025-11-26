@@ -19,6 +19,8 @@ class DashboardPage extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: Colors.cyan[50],
         automaticallyImplyLeading: false, // Bỏ nút back
+        centerTitle: false,// bắt buộc sang trái
+        titleSpacing: 40,
         title: const Text(
           'Tổng quan',
           textAlign: TextAlign.left,

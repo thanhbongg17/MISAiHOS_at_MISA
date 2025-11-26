@@ -51,28 +51,28 @@ class DepartmentSelectionView extends StatelessWidget {
             ),
           ),
 
-          // 2. Dòng Header chọn chính nó (Màu xanh, tích xanh - Giống ảnh)
+          // 2. Dòng Header chọn chính nó (Màu xanh, tích xanh)
           InkWell(
             onTap: () {
               // Chọn dòng này nghĩa là chọn "Tất cả" của node này -> Trả về kết quả
-              Get.back(result: currentNode);
+              Navigator.of(context).pop(currentNode);
             },
             child: Container(
               width: double.infinity,
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
               // Màu nền xanh nhạt giống header trong ảnh
               color: Colors.white,
               child: Row(
                 children: [
-                  const Icon(Icons.check_circle, color: Colors.blue, size: 24),
-                  const SizedBox(width: 12),
+                  const Icon(Icons.check_circle, color: Colors.blue, size: 20),
+                  const SizedBox(width: 16),
                   Expanded(
                     child: Text(
-                      "${currentNode.departmentName} ${currentNode.departmentCode}", // Tên + Mã
+                      "${currentNode.departmentName} ", // Tên + Mã
                       style: const TextStyle(
                           color: Colors.blue,
                           fontWeight: FontWeight.bold,
-                          fontSize: 16
+                          fontSize: 15
                       ),
                     ),
                   ),
@@ -80,10 +80,7 @@ class DepartmentSelectionView extends StatelessWidget {
               ),
             ),
           ),
-
-          // Dòng kẻ mờ ngăn cách
-          const Divider(height: 1, thickness: 1, color: Colors.black12),
-
+          // const Divider(height: 1, thickness: 1, color: Colors.black12),// Dòng kẻ mờ ngăn cách
           // 3. Danh sách các phòng ban con
           Expanded(
             child: children.isEmpty
@@ -95,10 +92,12 @@ class DepartmentSelectionView extends StatelessWidget {
                 return Column(
                   children: [
                     ListTile(
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                      visualDensity: const VisualDensity(horizontal: 0, vertical: 0),
+                      dense:true,
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
                       title: Text(
                         child.departmentName,
-                        style: const TextStyle(fontSize: 16, color: Colors.black87),
+                        style: const TextStyle(fontSize: 15, color: Colors.black87),
                       ),
                       // Nếu là Parent -> Hiện mũi tên >
                       trailing: child.isParent
@@ -106,24 +105,31 @@ class DepartmentSelectionView extends StatelessWidget {
                           : null,
 
                       onTap: () async {
+                        print("Bấm vào: ${child.departmentName} (Có con: ${child.isParent})");
                         if (child.isParent) {
-                          // --- LOGIC ĐỆ QUY QUAN TRỌNG ---
-                          // Nếu có con -> Mở tiếp màn hình này nhưng với data mới
-                          var result = await Get.to(() => DepartmentSelectionView(currentNode: child));
+                          // --- SỬA ĐOẠN NÀY ---
+                          var result = await Get.to(
+                                  () => DepartmentSelectionView(currentNode: child),
 
-                          // Nếu màn hình con trả về kết quả (User đã chọn) -> Đóng luôn màn này để về đích
+                              // Cho phép mở đệ quy màn hình giống nhau
+                              preventDuplicates: false
+                          );
+
+                          // Logic trả kết quả về (giữ nguyên)
                           if (result != null) {
-                            Get.back(result: result);
+                            if (context.mounted) {
+                              Navigator.of(context).pop(result);
+                            }
                           }
-                        } else {
+                        }else {
                           // --- LÁ (HẾT CON) ---
                           // Chọn luôn và quay về màn hình chính
-                          Get.back(result: child);
+                          Navigator.of(context).pop(child);
                         }
                       },
                     ),
                     // Đường kẻ mờ giữa các dòng (thụt vào 1 chút cho đẹp)
-                    const Divider(height: 1, indent: 16, color: Colors.black12),
+                    //const Divider(height: 1, indent: 14, color: Colors.black12),
                   ],
                 );
               },
