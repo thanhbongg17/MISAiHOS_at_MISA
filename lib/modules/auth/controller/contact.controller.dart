@@ -92,7 +92,10 @@ class ContactController extends GetxController{
       try {
         // Gọi phương thức trên instance 'contactService'
         final List<ContactUser> result =
-        await contactService.fetchContactUsers(query: query);
+        await contactService.fetchContactUsers(
+            query: query,
+            departmentID: currentDepartmentId // Truyền ID đã lưu
+        );
 
         users.assignAll(result);
       } catch (e) {
@@ -134,10 +137,10 @@ class ContactController extends GetxController{
 
     // Cập nhật ID lọc
     currentDepartmentId = selectedDept.departmentID;
+    _searchQuery.value = '';
 
     // Load lại API 3 theo ID mới
+    print("🔄 Đang tải nhân viên của phòng: ${selectedDept.departmentName} (ID: $currentDepartmentId)");
     fetchUsers();
-
-    print("Đã chuyển sang xem: ${selectedDept.departmentName}");
   }
 }

@@ -17,19 +17,25 @@ class ContactView extends GetView<ContactController> {
       // 📝 Cấu hình AppBar
       appBar: AppBar(
         automaticallyImplyLeading: false,   //  Tắt nút back khi trong tab
+        centerTitle: false,// bắt buộc sang trái
+        titleSpacing: 50,
         title: const Text(
           'Danh bạ',
-          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 22),
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 24),
         ),
         elevation: 0,
         //backgroundColor: Colors.red,
         backgroundColor: Colors.cyan[50],
         foregroundColor: Colors.black,
         actions: [
-          IconButton(
-            icon: const Icon(Icons.star_border, color: Colors.red),
-            onPressed: () {},
+          Padding(
+            padding: const EdgeInsets.only(right:20.0),
+            child:IconButton(
+              icon: const Icon(Icons.star_border, color: Colors.red),
+              onPressed: () {},
+            ),
           ),
+
         ],
       ),
 
@@ -50,7 +56,7 @@ class ContactView extends GetView<ContactController> {
                 // width: 0.0,                  // Độ dày đường viền
               ),
               borderRadius: BorderRadius.vertical(
-                top: Radius.circular(50),
+                top: Radius.circular(32),
               )
           ),
           child: SafeArea(

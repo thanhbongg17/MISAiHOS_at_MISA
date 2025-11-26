@@ -15,10 +15,6 @@ class DepartmentService {
       return [];
     }
 
-    // 2. CÁC THAM SỐ CỨNG LẤY TỪ CURL (QUAN TRỌNG)
-    String cookie = "x-ihos-tid=20020008.13; x-ihos-sid=0f4fbfdd-114b-443f-b997-c989a98af719";
-    String xSessionId = "2f5fb2ebdc104a78bf5c47d88f622c947745bcffa8234df9b1e8af9537b17e80";
-
     final headers = {
       "Content-Type": "application/json",
       "Authorization": "Bearer $token",

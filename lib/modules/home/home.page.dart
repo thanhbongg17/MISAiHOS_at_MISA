@@ -60,15 +60,16 @@ class MainFeedContent extends StatelessWidget {
   }
 
   Widget _buildBottomNavBar(HomeController controller) {
+    // thanh ngăn cách giữa body và footter
     return Container(
       decoration: const BoxDecoration(
-        border: Border(top: BorderSide(color: Colors.grey, width: 0.5)),
+        border: Border(top: BorderSide(color: Colors.grey, width: 0.05)),
       ),
       // 🌟 BỌC BẰNG Obx ĐỂ THEO DÕI TRẠNG THÁI currentIndex
       child: Obx(
         () => BottomNavigationBar(
           type: BottomNavigationBarType.fixed,
-          selectedItemColor: Colors.teal, // Màu theo ảnh
+          selectedItemColor: Colors.cyan[600], // Màu theo ảnh
           unselectedItemColor: Colors.grey,
           showUnselectedLabels: true,
           backgroundColor: Colors.white,

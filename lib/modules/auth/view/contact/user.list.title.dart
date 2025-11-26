@@ -65,7 +65,7 @@ class UserListTile extends StatelessWidget {
             // Xử lý chuyển trang chi tiết
           },
         ),
-        const Divider(height: 1, indent: 72, color: Colors.black12),
+        //Divider(height: 0, indent: 72, color: Colors.grey[50]),
       ],
     );
   }
