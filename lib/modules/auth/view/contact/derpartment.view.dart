@@ -24,9 +24,11 @@ class DepartmentSelectionView extends StatelessWidget {
         centerTitle: true,
         backgroundColor: Colors.white,
         elevation: 0,
-        leading: BackButton(
-          color: Colors.black,
-          onPressed: () => Get.back(), // Quay lại màn hình trước
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back, color: Colors.black),
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
         ),
       ),
       body: Column(

@@ -16,6 +16,7 @@ class ContactView extends GetView<ContactController> {
     return Scaffold(
       // 📝 Cấu hình AppBar
       appBar: AppBar(
+        automaticallyImplyLeading: false,   //  Tắt nút back khi trong tab
         title: const Text(
           'Danh bạ',
           style: TextStyle(fontWeight: FontWeight.bold, fontSize: 22),
