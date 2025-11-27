@@ -45,5 +45,12 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+    <!-- CẤU HÌNH QUAN TRỌNG CHO GỌI ĐIỆN & NHẮN TIN TRÊN IOS -->
+    <key>LSApplicationQueriesSchemes</key>
+    <array>
+        <string>tel</string>
+        <string>sms</string>
+    </array>
+    <!-- KẾT THÚC CẤU HÌNH -->
 </dict>
 </plist>

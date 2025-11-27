@@ -1,84 +1,96 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import '../../models/contact/derpartment.model.dart';
-import '../../../../token/token.manager.dart'; // Import file TokenManager vừa tạo
+import '../../models/contact/derpartment.model.dart'; // Giữ nguyên tên file derpartment của bạn
+import '../../../../token/token.manager.dart';
+import '../token/auth.service.dart'; // Import AuthService
 
 class DepartmentService {
   static const String baseUrl = "https://ihosapp.misa.vn/api/g1/mobile";
 
   Future<List<DepartmentModel>> getListDepartments() async {
     final url = Uri.parse('$baseUrl/qlcb/department/listDepartment/');
-    //1 token login
-    String? token = await TokenManager.getToken();
-    if (token == null || token.isEmpty) {
-      print("Lỗi: Chưa đăng nhập (Không tìm thấy token)");
+
+    // 1. Lấy token
+    String? initialToken = await TokenManager.getToken();
+    if (initialToken == null || initialToken.isEmpty) {
+      print("[API 2] Lỗi: Token rỗng");
       return [];
     }
 
-    final headers = {
-      "Content-Type": "application/json",
-      "Authorization": "Bearer $token",
+    // 2. Hàm tạo Header động (Sửa lỗi tokenToUse)
+    Map<String, String> createHeaders(String tokenToUse) {
+      return {
+        'Content-Type': 'application/json',
+        "Authorization": tokenToUse.startsWith("Bearer ") ? tokenToUse : "Bearer $tokenToUse",
+        "Cookie": "x-ihos-tid=${TokenManager.tenantId}; x-ihos-sid=${TokenManager.sessionId}",
+        "x-sessionid": TokenManager.xSessionId,
+        "AppCode": "System",
+        "AppVersion": "2.2",
+        "DeviceOS": "Android",
+        "x-culture": "vi",
+      };
+    }
+    // Xử lý từ khóa tìm kiếm (Tránh null)
+    //String searchKeyword = query?.trim() ?? "";
 
-      // Header bắt buộc từ CURL
-      "Cookie": "x-ihos-tid=${TokenManager.tenantId}; x-ihos-sid=${TokenManager.sessionId}",
-      "x-sessionid": TokenManager.xSessionId,
-
-      "AppCode": "System",
-      "AppVersion": "2.2",
-      "DeviceOS": "Android",
-      "x-culture": "vi",
-    };
-
-    // 3. BODY QUAN TRỌNG NHẤT (Thủ phạm gây lỗi [])
-    // Server cần biết lấy của Tổ chức nào (OrganizationID) và User nào (UserID)
+    // 3. Body Request
     final bodyData = {
-      "OrganizationID": TokenManager.organizationId, // Lấy từ CURL
-      "UserID": TokenManager.userId,        // Lấy từ CURL
+      "OrganizationID": TokenManager.organizationId,
+      "UserID": TokenManager.userId,
       "Skip": 0,
-      "Take": 20
+      "Take": 20,
+      "Active": true,
+      "PageSize": 0
     };
 
-    try {
-      print("--------------- BẮT ĐẦU GỌI API 2 ---------------");
-      final response = await http.post(
+    // 4. Hàm thực hiện request (để dễ retry)
+    Future<http.Response> performRequest(String currentToken) {
+      return http.post(
         url,
-        headers: headers,
+        headers: createHeaders(currentToken), // Truyền token vào hàm tạo header
         body: jsonEncode(bodyData),
       );
-      print("Status Code: ${response.statusCode}");
-      // 👇 IN RA DỮ LIỆU THÔ SERVER TRẢ VỀ (Quan trọng)
-      print("Response Body RAW: ${response.body}");
+    }
+
+    try {
+      print("API 2: Đang lấy danh sách phòng ban...");
+
+      // Gọi lần 1
+      var response = await performRequest(initialToken);
+
+      // 5. Tự động Refresh Token nếu lỗi 401
+      if (response.statusCode == 401) {
+        print("API 2: Token hết hạn (401). Đang thử Refresh...");
+        final authService = AuthService();
+        bool refreshSuccess = await authService.refreshToken();
+
+        if (refreshSuccess) {
+          String? newToken = await TokenManager.getToken();
+          if (newToken != null) {
+            print("API 2: Gọi lại với Token mới...");
+            response = await performRequest(newToken);
+          }
+        }
+      }
 
       if (response.statusCode == 200) {
-        // Decode UTF8
         var decodedData = jsonDecode(utf8.decode(response.bodyBytes));
-
-        // KIỂM TRA CẤU TRÚC DỮ LIỆU
         List<dynamic> listData = [];
 
         if (decodedData is List) {
-          // Trường hợp 1: Trả về thẳng List [...]
           listData = decodedData;
         } else if (decodedData is Map && decodedData.containsKey('Data')) {
-          // Trường hợp 2: Trả về Object { "Data": [...], "Success": true }
           listData = decodedData['Data'];
-        } else {
-          print("⚠️ Cấu trúc lạ, không phải List cũng không phải Object chứa Data");
-          return [];
         }
 
-        print("Tìm thấy ${listData.length} phần tử.");
-
-        // Map sang Model
+        print("API 2: Tìm thấy ${listData.length} phòng ban.");
         return listData.map((json) => DepartmentModel.fromJson(json)).toList();
-      }else {
-        print("Lỗi server: ${response.statusCode}");
+      } else {
+        print("API 2 Lỗi Server: ${response.statusCode}");
         return [];
       }
-    } catch (e, stackTrace) {
-      // 👇 IN RA LỖI CHÍNH XÁC
-      print("❌ LỖI PARSING DATA: $e");
-      print(stackTrace);
+    } catch (e) {
+      print("API 2 Lỗi Mạng: $e");
       return [];
     }
   }
