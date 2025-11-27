@@ -30,6 +30,8 @@ class ContactService {
 
     // 3. Logic chọn ID lọc
     String filterID = departmentID ?? TokenManager.rootDepartmentId;
+    // Xử lý từ khóa tìm kiếm (Tránh null)
+    String searchKeyword = query?.trim() ?? "";
 
     final Map<String, dynamic> bodyRequest = {
       "OrganizationID": TokenManager.organizationId,
@@ -39,7 +41,11 @@ class ContactService {
       "PageSize": 50,
       "Skip": 0,
       "Take": 50,
-      "QuickSearch": query ?? ""
+        //search
+      "QuickSearch": searchKeyword,
+      "Keyword": searchKeyword,
+      "SearchValue": searchKeyword,
+      "FilterValue": searchKeyword
     };
 
     // 4. Hàm thực hiện request (Đóng gói để dễ gọi lại khi cần retry)
@@ -53,7 +59,8 @@ class ContactService {
     }
 
     try {
-      print("🚀 API 3 đang lọc theo ID: $filterID");
+      print("API 3: Tìm kiếm='$searchKeyword' | Phòng ban=$filterID");
+      print("API 3 đang lọc theo ID: $filterID");
 
       // Lần gọi đầu tiên dùng token ban đầu
       var response = await performRequest(initialToken);

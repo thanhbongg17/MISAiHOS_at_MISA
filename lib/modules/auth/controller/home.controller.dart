@@ -75,9 +75,9 @@ class HomeController extends GetxController {
   void fetchUsersAndBirthdays() async {
     // 2.1. Giả lập Dữ liệu từ API/DB
     final mockAllUsers = [
-      User(name: 'Hà Văn Tùng', initials: 'HT', color: Colors.green, dateOfBirth: DateTime(1990, 11, 26)),
+      User(name: 'Hà Văn Tùng', initials: 'HT', color: Colors.green, dateOfBirth: DateTime(1990, 11, 27)),
       User(name: 'Lê Thu Linh', initials: 'LL', color: Colors.purple, dateOfBirth: DateTime(1995, 11, 18)), // Không sinh nhật
-      User(name: 'Nguyễn Văn Nam', initials: 'NN', color: Colors.blue, dateOfBirth: DateTime(1985, 11, 26)),
+      User(name: 'Nguyễn Văn Nam', initials: 'NN', color: Colors.blue, dateOfBirth: DateTime(1985, 11, 27)),
       User(name: 'Phạm Thị Mai', initials: 'PM', color: Colors.red, dateOfBirth: DateTime(1992, 11, 19)), // Người sinh nhật thứ 3
       User(name: 'Đào Duy Anh', initials: 'ĐA', color: Colors.brown, dateOfBirth: DateTime(1993, 7, 10)), // Không sinh nhật
       User(name: 'Phạm Tiến Thành', initials: 'ĐA', color: Colors.brown, dateOfBirth: DateTime(1993, 11, 26)),

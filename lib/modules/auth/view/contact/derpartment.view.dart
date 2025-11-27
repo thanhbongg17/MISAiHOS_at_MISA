@@ -20,7 +20,7 @@ class DepartmentSelectionView extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text("Cơ cấu tổ chức", style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
+        title: const Text("Cơ cấu tổ chức", style: TextStyle(color: Colors.black)),
         centerTitle: true,
         backgroundColor: Colors.white,
         elevation: 0,
@@ -37,6 +37,8 @@ class DepartmentSelectionView extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: TextField(
+              // GẮN HÀM TÌM KIẾM
+              onChanged: (value) => controller.searchDepartments(value),
               decoration: InputDecoration(
                 hintText: 'Tìm kiếm',
                 prefixIcon: const Icon(Icons.search, color: Colors.grey),
@@ -50,90 +52,108 @@ class DepartmentSelectionView extends StatelessWidget {
               ),
             ),
           ),
+          // Dùng Obx để chuyển đổi giữa List tìm kiếm và Cây thư mục
+          Expanded(
+            child: Obx(() {
+              // A. TRƯỜNG HỢP ĐANG TÌM KIẾM
+              if (controller.departmentSearchQuery.isNotEmpty) {
+                if (controller.filteredDepartments.isEmpty) {
+                  return const Center(child: Text("Không tìm thấy kết quả"));
+                }
+                return ListView.builder(
+                  itemCount: controller.filteredDepartments.length,
+                  itemBuilder: (context, index) {
+                    final dept = controller.filteredDepartments[index];
+                    return ListTile(
+                      title: Text(dept.departmentName, style: const TextStyle()),
+                      onTap: () {
+                        if (context.mounted) Navigator.of(context).pop(dept);
+                      },
+                    );
+                  },
+                );
+              }
 
-          // 2. Dòng Header chọn chính nó (Màu xanh, tích xanh)
-          InkWell(
-            onTap: () {
-              // Chọn dòng này nghĩa là chọn "Tất cả" của node này -> Trả về kết quả
-              Navigator.of(context).pop(currentNode);
-            },
-            child: Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-              // Màu nền xanh nhạt giống header trong ảnh
-              color: Colors.white,
-              child: Row(
+              // B. TRƯỜNG HỢP HIỂN THỊ CÂY BÌNH THƯỜNG
+              List<DepartmentModel> children = controller.getChildren(currentNode.departmentID);
+
+              return Column(
                 children: [
-                  const Icon(Icons.check_circle, color: Colors.blue, size: 20),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Text(
-                      "${currentNode.departmentName} ", // Tên + Mã
-                      style: const TextStyle(
-                          color: Colors.blue,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 15
+                  // Header chọn chính node hiện tại
+                  InkWell(
+                    onTap: () => Navigator.of(context).pop(currentNode),
+                    child: Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      color: Colors.white,
+                      child: Row(
+                        children: [
+                          const Icon(Icons.check_circle, color: Colors.blue, size: 24),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Text(
+                              currentNode.departmentName,
+                              style: const TextStyle(color: Colors.blue, fontWeight: FontWeight.bold, fontSize: 15),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ),
-                ],
-              ),
-            ),
-          ),
-          // const Divider(height: 1, thickness: 1, color: Colors.black12),// Dòng kẻ mờ ngăn cách
-          // 3. Danh sách các phòng ban con
-          Expanded(
-            child: children.isEmpty
-                ? const Center(child: Text("Không có đơn vị trực thuộc", style: TextStyle(color: Colors.grey)))
-                : ListView.builder(
-              itemCount: children.length,
-              itemBuilder: (context, index) {
-                final child = children[index];
-                return Column(
-                  children: [
-                    ListTile(
-                      visualDensity: const VisualDensity(horizontal: 0, vertical: 0),
-                      dense:true,
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
-                      title: Text(
-                        child.departmentName,
-                        style: const TextStyle(fontSize: 15, color: Colors.black87),
-                      ),
-                      // Nếu là Parent -> Hiện mũi tên >
-                      trailing: child.isParent
-                          ? const Icon(Icons.keyboard_arrow_right, color: Colors.grey)
-                          : null,
+                  //const Divider(height: 1, thickness: 1, color: Colors.black12),
 
-                      onTap: () async {
-                        print("Bấm vào: ${child.departmentName} (Có con: ${child.isParent})");
-                        if (child.isParent) {
-                          // --- SỬA ĐOẠN NÀY ---
-                          var result = await Get.to(
-                                  () => DepartmentSelectionView(currentNode: child),
+                  // Danh sách con
+                  Expanded(
+                    child: children.isEmpty
+                        ? const Center(child: Text("Không có đơn vị trực thuộc", style: TextStyle(color: Colors.grey)))
+                        : ListView.builder(
+                      padding: EdgeInsets.zero,
+                      itemCount: children.length,
+                      itemBuilder: (context, index) {
+                        final child = children[index];
+                        return Column(
+                          children: [
+                            ListTile(
+                              visualDensity: const VisualDensity(horizontal: 0, vertical: -3), // Thu gọn chiều cao
+                              dense: true,
+                              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
 
-                              // Cho phép mở đệ quy màn hình giống nhau
-                              preventDuplicates: false
-                          );
+                              title: Text(
+                                child.departmentName,
+                                style: const TextStyle(fontSize: 15, color: Colors.black87),
+                              ),
 
-                          // Logic trả kết quả về (giữ nguyên)
-                          if (result != null) {
-                            if (context.mounted) {
-                              Navigator.of(context).pop(result);
-                            }
-                          }
-                        }else {
-                          // --- LÁ (HẾT CON) ---
-                          // Chọn luôn và quay về màn hình chính
-                          Navigator.of(context).pop(child);
-                        }
+                              trailing: child.isParent
+                                  ? const Icon(Icons.keyboard_arrow_right, color: Colors.grey, size: 20)
+                                  : null,
+
+                              onTap: () async {
+                                if (child.isParent) {
+                                  // --- ĐỆ QUY ---
+                                  var result = await Get.to(
+                                          () => DepartmentSelectionView(currentNode: child),
+                                      preventDuplicates: false // Quan trọng để mở được màn hình giống nhau
+                                  );
+
+                                  // Trả kết quả ngược lên trên
+                                  if (result != null && context.mounted) {
+                                    Navigator.of(context).pop(result);
+                                  }
+                                } else {
+                                  // --- CHỌN LUÔN ---
+                                  Navigator.of(context).pop(child);
+                                }
+                              },
+                            ),
+                            //const Divider(height: 1, indent: 16, color: Colors.black12),
+                          ],
+                        );
                       },
                     ),
-                    // Đường kẻ mờ giữa các dòng (thụt vào 1 chút cho đẹp)
-                    //const Divider(height: 1, indent: 14, color: Colors.black12),
-                  ],
-                );
-              },
-            ),
+                  ),
+                ],
+              );
+            }),
           ),
         ],
       ),

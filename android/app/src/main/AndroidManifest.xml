@@ -1,4 +1,17 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Thêm phần queries này để ứng dụng có thể kiểm tra và mở các intent gọi điện/nhắn tin -->
+    <queries>
+        <!-- Cho phép mở trình gọi điện -->
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:scheme="tel" />
+        </intent>
+        <!-- Cho phép mở trình nhắn tin (nếu cần thiết sau này) -->
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:scheme="sms" />
+        </intent>
+    </queries>
     <application
         android:label="misa_ihos_thanh"
         android:name="${applicationName}"
