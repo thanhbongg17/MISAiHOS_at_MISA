@@ -130,10 +130,13 @@ class FeedPost {
   final List<String> images;
   final List<ImageDetail>? listImageDetail;
 
+
   final int totalViewCount;
   final int totalViewer;
 
   final String? featureImage;
+
+  final int featureImageType;
 
   final int commentsCount;
   final int totalCommentsCount;
@@ -161,6 +164,7 @@ class FeedPost {
     required this.totalViewCount,
     required this.totalViewer,
     this.featureImage,
+    required this.featureImageType,
     required this.commentsCount,
     required this.totalCommentsCount,
     required this.images,
@@ -297,6 +301,10 @@ class FeedPost {
 
         featureImage: json['FeatureImage']?.toString(),
 
+        featureImageType: json['FeatureImageType'] is int
+            ? json['FeatureImageType'] as int
+            : (int.tryParse(json['FeatureImageType']?.toString() ?? '0') ?? 0),
+
         commentsCount: json['CommentsCount'] is int
             ? json['CommentsCount'] as int
             : (int.tryParse(json['CommentsCount']?.toString() ?? '0') ?? 0),
@@ -321,6 +329,35 @@ class FeedPost {
       print("[FeedPost] JSON: $json");
       rethrow;
     }
+  }
+  // --- BỔ SUNG HELPER ĐỂ LẤY URL ẢNH ---
+
+  // --- LOGIC LẤY URL ẢNH CHUẨN ---
+
+  // Định nghĩa Base URL dựa trên domain trong ảnh Postman bạn gửi
+  static const String _imageBaseUrl = "https://ihosapp.misa.vn/system/api/g1/file/Files/";
+  //static const String _imageBaseUrl = "https://ihosapp.misa.vn/api/g1/file/Files/";
+
+  /// Hàm helper lấy link full
+  String getFullImageUrl(String? fileName) {
+    if (fileName == null || fileName.isEmpty) return '';
+
+    // Nếu ảnh đã là link online (bắt đầu bằng http) thì giữ nguyên
+    if (fileName.toLowerCase().startsWith('http')) return fileName;
+
+    // Ghép domain vào tên file
+    return "$_imageBaseUrl$fileName";
+  }
+
+  // Logic hiển thị ảnh chuẩn: Ưu tiên FeatureImage nếu có
+  String? get displayImage {
+    if (featureImage != null && featureImage!.isNotEmpty) {
+      return getFullImageUrl(featureImage!);
+    }
+    if (images.isNotEmpty) {
+      return getFullImageUrl(images[0]);
+    }
+    return null;
   }
 }
 
