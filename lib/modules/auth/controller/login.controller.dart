@@ -123,49 +123,7 @@ class LoginController extends GetxController {
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                    ),
-                    // Expanded(
-                    //   child: Column(
-                    //     crossAxisAlignment: CrossAxisAlignment.start,
-                    //     mainAxisSize: MainAxisSize.min,
-                    //     children: [
-                    //       // Text(
-                    //       //   errorTitle,
-                    //       //   style: const TextStyle(
-                    //       //     color: Colors.white,
-                    //       //     fontWeight: FontWeight.bold,
-                    //       //     fontSize: 16,
-                    //       //   ),
-                    //       // ),
-                    //       // const SizedBox(height: 2),
-                    //       Text(
-                    //         errorMessage,
-                    //         style: const TextStyle(
-                    //           color: Colors.black,
-                    //           fontSize: 12,
-                    //         ),
-                    //       ),
-                    //       TextButton(
-                    //         onPressed: () {
-                    //           ScaffoldMessenger.of(context).hideCurrentSnackBar();
-                    //         },
-                    //         style: TextButton.styleFrom(
-                    //           padding: EdgeInsets.zero,
-                    //           minimumSize: Size.zero,
-                    //           tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                    //         ),
-                    //         child: Text(
-                    //           'Đóng',
-                    //           style: TextStyle(
-                    //             color: Colors.teal[800],
-                    //             fontSize: 12,
-                    //             fontWeight: FontWeight.bold,
-                    //           ),
-                    //         ),
-                    //       ),
-                    //     ],
-                    //   ),
-                    // ),
+                    )
                   ],
                 ),
               ),
@@ -268,7 +226,7 @@ class LoginController extends GetxController {
       Get.snackbar(
         'Lỗi',
         'Không nhận được dữ liệu đăng nhập hợp lệ.',
-        snackPosition: SnackPosition.BOTTOM,
+        snackPosition: SnackPosition.TOP,
       );
       return;
     }
@@ -293,7 +251,7 @@ class LoginController extends GetxController {
       Get.snackbar(
         'Lỗi',
         'Không nhận được token đăng nhập.',
-        snackPosition: SnackPosition.BOTTOM,
+        snackPosition: SnackPosition.TOP,
       );
       return;
     }
@@ -302,7 +260,7 @@ class LoginController extends GetxController {
     Get.snackbar(
       'Đăng nhập',
       'Đăng nhập thành công',
-      snackPosition: SnackPosition.BOTTOM,
+      snackPosition: SnackPosition.TOP,
     );
     
     // Navigate sau khi đảm bảo token đã được set

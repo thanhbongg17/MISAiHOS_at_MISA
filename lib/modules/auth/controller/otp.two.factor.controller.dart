@@ -188,7 +188,7 @@ class TwoFactorController extends GetxController {
     bool isError = false,
   }) {
     if (!context.mounted) return;
-    final background = isError ? Colors.green[300] : Colors.blueAccent;
+    final background = isError ? Colors.blueGrey[50] : Colors.blueAccent;
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
